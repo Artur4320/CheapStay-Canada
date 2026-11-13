@@ -49,12 +49,16 @@ fun EasyWayApp() {
             primary = androidx.compose.ui.graphics.Color(0xFF176B5B),
             secondary = androidx.compose.ui.graphics.Color(0xFFDA8A38),
             background = androidx.compose.ui.graphics.Color(0xFFF5F7F5),
-            surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
+            surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
+            surfaceContainer = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
+            surfaceContainerHigh = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
+            surfaceContainerLow = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
+            surfaceVariant = androidx.compose.ui.graphics.Color(0xFFF1F4F1)
         )
     ) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+                Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
