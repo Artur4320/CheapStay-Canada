@@ -1,6 +1,14 @@
 package ca.easyway.app
 
 import android.os.Bundle
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.LocationManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -35,6 +43,24 @@ fun EasyWayApp() {
     var language by remember { mutableStateOf("EN") }
     val french = language == "FR"
     var origin by remember { mutableStateOf("") }
+    var locationMessage by remember { mutableStateOf("") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val locationManager = remember { context.getSystemService(android.content.Context.LOCATION_SERVICE) as LocationManager }
+    val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+        if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == true || grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                val provider = if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER
+                @Suppress("MissingPermission")
+                val location = locationManager.getLastKnownLocation(provider)
+                if (location != null) {
+                    val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
+                    origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
+                    locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
+                } else locationMessage = if (french) "Position indisponible. Saisissez votre adresse manuellement." else "Location unavailable. Enter your address manually."
+            } catch (_: Exception) { locationMessage = if (french) "Position indisponible. Saisissez votre adresse manuellement." else "Location unavailable. Enter your address manually." }
+        } else locationMessage = if (french) "Autorisation refusée. Saisissez votre adresse manuellement." else "Permission denied. Enter your address manually."
+    }
     var destination by remember { mutableStateOf("") }
     var travelDate by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -80,6 +106,8 @@ fun EasyWayApp() {
                         OutlinedTextField(value = origin, onValueChange = { origin = it },
                             label = { Text(if (french) "Départ" else "From") }, placeholder = { Text(if (french) "ex. Langford, C.-B." else "e.g. Langford, BC") },
                             modifier = Modifier.fillMaxWidth(), singleLine = true)
+                        OutlinedButton(onClick = { locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }, modifier = Modifier.fillMaxWidth()) { Text(if (french) "Utiliser ma position" else "Use my location") }
+                        if (locationMessage.isNotBlank()) Text(locationMessage, style = MaterialTheme.typography.bodySmall)
                         OutlinedTextField(value = destination, onValueChange = { destination = it },
                             label = { Text(if (french) "Destination" else "To") }, placeholder = { Text(if (french) "ex. Kelowna, C.-B." else "e.g. Kelowna, BC") },
                             modifier = Modifier.fillMaxWidth(), singleLine = true)
