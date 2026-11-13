@@ -95,10 +95,11 @@ fun EasyWayApp() {
                         Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
                         Text(if (french) "Planifiez vos déplacements partout au Canada" else "Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        FilterChip(selected = !french, onClick = { language = "EN" }, label = { Text("EN") })
-                        FilterChip(selected = french, onClick = { language = "FR" }, label = { Text("FR") })
-                    }
+                    FilterChip(
+                        selected = true,
+                        onClick = { language = if (french) "EN" else "FR" },
+                        label = { Text(language) }
+                    )
                 }
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
