@@ -78,10 +78,10 @@ fun EasyWayApp() {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(if (french) "Planifiez votre trajet" else "Plan your route", style = MaterialTheme.typography.titleLarge)
                         OutlinedTextField(value = origin, onValueChange = { origin = it },
-                            label = { Text(if (french) "Départ" else "From") }, placeholder = { Text("e.g. Langford, BC") },
+                            label = { Text(if (french) "Départ" else "From") }, placeholder = { Text(if (french) "ex. Langford, C.-B." else "e.g. Langford, BC") },
                             modifier = Modifier.fillMaxWidth(), singleLine = true)
                         OutlinedTextField(value = destination, onValueChange = { destination = it },
-                            label = { Text(if (french) "Destination" else "To") }, placeholder = { Text("e.g. Kelowna, BC") },
+                            label = { Text(if (french) "Destination" else "To") }, placeholder = { Text(if (french) "ex. Kelowna, C.-B." else "e.g. Kelowna, BC") },
                             modifier = Modifier.fillMaxWidth(), singleLine = true)
                         OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
                             Text(if (travelDate.isBlank()) { if (french) "Date de départ · Choisir" else "Departure date · Choose date" } else { if (french) "Départ · $travelDate" else "Departure · $travelDate" })
@@ -95,7 +95,7 @@ fun EasyWayApp() {
                                 style = MaterialTheme.typography.titleMedium)
                             OutlinedButton(onClick = { if (travellers < 20) travellers++ }, enabled = travellers < 20) { Text("+") }
                             Spacer(Modifier.weight(1f))
-                            Text(if (travellers == 1) "Solo trip" else "Group trip",
+                            Text(if (travellers == 1) { if (french) "Voyage solo" else "Solo trip" } else { if (french) "Voyage en groupe" else "Group trip" },
                                 color = MaterialTheme.colorScheme.primary)
                         }
                     }
