@@ -12,6 +12,12 @@ import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -95,10 +101,9 @@ fun EasyWayApp() {
                         Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
                         Text(if (french) "Planifiez vos déplacements partout au Canada" else "Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    FilterChip(
-                        selected = true,
-                        onClick = { language = if (french) "EN" else "FR" },
-                        label = { Text(language) }
+                    LanguageFlagButton(
+                        language = language,
+                        onClick = { language = if (french) "EN" else "FR" }
                     )
                 }
                 Card(Modifier.fillMaxWidth()) {
@@ -200,5 +205,64 @@ fun EasyWayApp() {
         }, dismissButton = {
             TextButton(onClick = { showDatePicker = false }) { Text(if (french) "Annuler" else "Cancel") }
         }) { DatePicker(state = pickerState) }
+    }
+}
+
+
+@Composable
+private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
+    val french = language == "FR"
+    Box(
+        modifier = Modifier
+            .size(width = 76.dp, height = 46.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            if (french) {
+                // Quebec flag: fleurdelise blue field, white cross and four fleurs-de-lis.
+                drawRect(Color(0xFF003399))
+                drawRect(Color.White, topLeft = Offset(w * 0.43f, 0f), size = androidx.compose.ui.geometry.Size(w * 0.14f, h))
+                drawRect(Color.White, topLeft = Offset(0f, h * 0.42f), size = androidx.compose.ui.geometry.Size(w, h * 0.16f))
+                val centers = listOf(
+                    Offset(w * 0.25f, h * 0.25f), Offset(w * 0.75f, h * 0.25f),
+                    Offset(w * 0.25f, h * 0.75f), Offset(w * 0.75f, h * 0.75f)
+                )
+                centers.forEach { c ->
+                    drawCircle(Color.White, radius = h * 0.075f, center = Offset(c.x, c.y - h * 0.06f))
+                    drawCircle(Color.White, radius = h * 0.055f, center = Offset(c.x - h * 0.055f, c.y))
+                    drawCircle(Color.White, radius = h * 0.055f, center = Offset(c.x + h * 0.055f, c.y))
+                    drawLine(Color.White, Offset(c.x, c.y + h * 0.015f), Offset(c.x, c.y + h * 0.12f), strokeWidth = h * 0.035f)
+                }
+            } else {
+                // British Columbia flag: Union Jack, golden crown/sun and blue-white waves.
+                drawRect(Color.White)
+                val unionH = h * 0.48f
+                drawRect(Color(0xFF012169), size = androidx.compose.ui.geometry.Size(w * 0.48f, unionH))
+                drawLine(Color.White, Offset(0f, 0f), Offset(w * 0.48f, unionH), strokeWidth = h * 0.16f)
+                drawLine(Color.White, Offset(w * 0.48f, 0f), Offset(0f, unionH), strokeWidth = h * 0.16f)
+                drawLine(Color(0xFFC8102E), Offset(0f, 0f), Offset(w * 0.48f, unionH), strokeWidth = h * 0.055f)
+                drawLine(Color(0xFFC8102E), Offset(w * 0.48f, 0f), Offset(0f, unionH), strokeWidth = h * 0.055f)
+                drawRect(Color.White, topLeft = Offset(w * 0.19f, 0f), size = androidx.compose.ui.geometry.Size(w * 0.10f, unionH))
+                drawRect(Color.White, topLeft = Offset(0f, unionH * 0.36f), size = androidx.compose.ui.geometry.Size(w * 0.48f, unionH * 0.28f))
+                drawRect(Color(0xFFC8102E), topLeft = Offset(w * 0.22f, 0f), size = androidx.compose.ui.geometry.Size(w * 0.04f, unionH))
+                drawRect(Color(0xFFC8102E), topLeft = Offset(0f, unionH * 0.44f), size = androidx.compose.ui.geometry.Size(w * 0.48f, unionH * 0.12f))
+                drawCircle(Color(0xFFFFC72C), radius = h * 0.12f, center = Offset(w * 0.72f, h * 0.48f))
+                val waveTop = h * 0.60f
+                for (i in 0..4) {
+                    drawRect(if (i % 2 == 0) Color(0xFF003DA5) else Color.White,
+                        topLeft = Offset(0f, waveTop + i * h * 0.08f),
+                        size = androidx.compose.ui.geometry.Size(w, h * 0.08f))
+                }
+            }
+        }
+        Text(
+            language,
+            modifier = Modifier.align(androidx.compose.ui.Alignment.Center),
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        )
     }
 }
