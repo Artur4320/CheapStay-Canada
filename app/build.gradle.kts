@@ -4,10 +4,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 android {
-    namespace = "ca.cheapstay.app"
+    namespace = "ca.easyway.app"
     compileSdk = 36
     defaultConfig {
-        applicationId = "ca.cheapstay.app"
+        applicationId = "ca.easyway.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 10
