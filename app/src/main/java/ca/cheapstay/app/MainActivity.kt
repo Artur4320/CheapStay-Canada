@@ -38,7 +38,19 @@ fun CheapStayApp() {
                 Text("Travel mode: $transport")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Car", "Bike", "Walk", "Transit").forEach { mode ->
-                        Button(onClick = { transport = mode }) { Text(mode) }
+                        val isSelected = transport == mode
+                        Button(
+                            onClick = { transport = mode },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.48f)
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                }
+                            )
+                        ) {
+                            Text(mode)
+                        }
                     }
                 }
                 Text("Maximum budget: $" + budget.toInt() + " CAD / night")
