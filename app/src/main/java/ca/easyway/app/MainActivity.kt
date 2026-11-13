@@ -48,9 +48,12 @@ private fun millisToDate(millis: Long): String =
 fun EasyWayApp() {
     var language by remember { mutableStateOf("EN") }
     val french = language == "FR"
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val preferences = remember { context.getSharedPreferences("easyway_settings", android.content.Context.MODE_PRIVATE) }
+    var selectedRegion by remember { mutableStateOf(preferences.getString("travel_region", "") ?: "") }
+    var showRegionDialog by remember { mutableStateOf(selectedRegion.isBlank()) }
     var origin by remember { mutableStateOf("") }
     var locationMessage by remember { mutableStateOf("") }
-    val context = androidx.compose.ui.platform.LocalContext.current
     val locationManager = remember { context.getSystemService(android.content.Context.LOCATION_SERVICE) as LocationManager }
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
         if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == true || grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
@@ -97,9 +100,10 @@ fun EasyWayApp() {
             ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("EasyWay", style = MaterialTheme.typography.headlineLarge)
                         Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
-                        Text(if (french) "Planifiez vos déplacements partout au Canada" else "Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = { showRegionDialog = true }, contentPadding = PaddingValues(0.dp)) {
+                            Text(if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion)
+                        }
                     }
                     LanguageFlagButton(
                         language = language,
@@ -194,6 +198,64 @@ fun EasyWayApp() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+    }
+    if (showRegionDialog) {
+        val regions = listOf(
+            "British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec",
+            "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador",
+            "Yukon", "Northwest Territories", "Nunavut"
+        )
+        AlertDialog(
+            onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false },
+            title = { Text(if (french) "Où souhaitez-vous voyager ?" else "Where would you like to travel?") },
+            text = {
+                Column(
+                    Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(if (french) "Choisissez une région de voyage" else "Choose your travel area",
+                        style = MaterialTheme.typography.bodyMedium)
+                    OutlinedButton(
+                        onClick = {
+                            selectedRegion = "ALL"
+                            preferences.edit().putString("travel_region", selectedRegion).apply()
+                            showRegionDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("🇨🇦  " + if (french) "Tout le Canada" else "All Canada") }
+                    HorizontalDivider()
+                    regions.forEach { region ->
+                        OutlinedButton(
+                            onClick = {
+                                selectedRegion = region
+                                preferences.edit().putString("travel_region", selectedRegion).apply()
+                                showRegionDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if (french) when (region) {
+                                "British Columbia" -> "Colombie-Britannique"
+                                "Quebec" -> "Québec"
+                                "New Brunswick" -> "Nouveau-Brunswick"
+                                "Nova Scotia" -> "Nouvelle-Écosse"
+                                "Prince Edward Island" -> "Île-du-Prince-Édouard"
+                                "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
+                                "Northwest Territories" -> "Territoires du Nord-Ouest"
+                                else -> region
+                            } else region)
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                if (selectedRegion.isNotBlank()) {
+                    TextButton(onClick = { showRegionDialog = false }) {
+                        Text(if (french) "Fermer" else "Close")
+                    }
+                }
+            }
+        )
     }
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(travelDate))
