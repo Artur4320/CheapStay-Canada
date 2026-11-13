@@ -18,206 +18,147 @@ import java.time.format.DateTimeFormatter
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { CheapStayApp() }
+        setContent { EasyWayApp() }
     }
 }
 
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
-
 private fun dateToMillis(date: String): Long? = try {
     LocalDate.parse(date, dateFormatter).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-} catch (_: Exception) {
-    null
-}
-
+} catch (_: Exception) { null }
 private fun millisToDate(millis: Long): String =
     Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate().format(dateFormatter)
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun CheapStayApp() {
+fun EasyWayApp() {
     var origin by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
-    var budget by remember { mutableFloatStateOf(100f) }
-    var transport by remember { mutableStateOf("Car") }
-    var checkIn by remember { mutableStateOf("") }
-    var checkOut by remember { mutableStateOf("") }
-    var showCheckInPicker by remember { mutableStateOf(false) }
-    var showCheckOutPicker by remember { mutableStateOf(false) }
-    var guests by remember { mutableIntStateOf(2) }
-    var radius by remember { mutableFloatStateOf(25f) }
-    val stayTypes = listOf("Hotel", "Motel", "Hostel", "Camping", "RV site", "Cabin")
-    val selectedTypes = remember { mutableStateListOf("Hotel", "Motel", "Hostel", "Camping", "RV site", "Cabin") }
+    var travelDate by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var travellers by remember { mutableIntStateOf(1) }
+    var includeOvernight by remember { mutableStateOf(false) }
+    var showSearchInfo by remember { mutableStateOf(false) }
+    val transportOptions = listOf("Bus", "Ferry", "Train", "Flight", "Car", "Local transit")
+    val selectedTransport = remember { mutableStateListOf(*transportOptions.toTypedArray()) }
+    val overnightOptions = listOf("Hotel", "Motel", "Hostel", "Camping", "Cabin")
+    val selectedOvernight = remember { mutableStateListOf("Hotel", "Motel", "Hostel") }
 
-    fun defaultRadius(mode: String): Float = when (mode) {
-        "Car" -> 25f
-        "Bike" -> 10f
-        "Walk" -> 5f
-        else -> 5f
-    }
-
-    MaterialTheme {
-        Surface(Modifier.fillMaxSize()) {
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            primary = androidx.compose.ui.graphics.Color(0xFF176B5B),
+            secondary = androidx.compose.ui.graphics.Color(0xFFDA8A38),
+            background = androidx.compose.ui.graphics.Color(0xFFF5F7F5),
+            surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF)
+        )
+    ) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("CheapStay Canada", style = MaterialTheme.typography.headlineMedium)
-                Text("Find affordable places to stay along your route.")
-
-                OutlinedTextField(
-                    value = origin,
-                    onValueChange = { origin = it },
-                    label = { Text("Starting point") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = destination,
-                    onValueChange = { destination = it },
-                    label = { Text("Destination") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Text("Travel mode: $transport")
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Car", "Bike", "Walk", "Transit").forEach { mode ->
-                        val isSelected = transport == mode
-                        Button(
-                            onClick = {
-                                transport = mode
-                                radius = defaultRadius(mode)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.48f)
-                                } else {
-                                    MaterialTheme.colorScheme.primary
-                                }
-                            )
-                        ) {
-                            Text(mode)
-                        }
-                    }
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("EasyWay", style = MaterialTheme.typography.headlineLarge)
+                    Text("Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
+                    Text("Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-
-                Text("Stay dates")
-                OutlinedButton(
-                    onClick = { showCheckInPicker = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (checkIn.isBlank()) "Check-in: Select date" else "Check-in: $checkIn")
-                }
-                OutlinedButton(
-                    onClick = { showCheckOutPicker = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (checkOut.isBlank()) "Check-out: Select date" else "Check-out: $checkOut")
-                }
-
-                Text("Guests: $guests")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(onClick = { if (guests > 1) guests-- }, enabled = guests > 1) {
-                        Text("−")
-                    }
-                    OutlinedButton(onClick = { if (guests < 12) guests++ }, enabled = guests < 12) {
-                        Text("+")
-                    }
-                }
-
-                Text("Accommodation type")
-                stayTypes.chunked(3).forEach { rowTypes ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        rowTypes.forEach { type ->
-                            FilterChip(
-                                selected = type in selectedTypes,
-                                onClick = {
-                                    if (type in selectedTypes) selectedTypes.remove(type)
-                                    else selectedTypes.add(type)
-                                },
-                                label = { Text(type) }
-                            )
-                        }
-                    }
-                }
-
-                Text("Search radius: ${radius.toInt()} km from route")
-                Slider(
-                    value = radius,
-                    onValueChange = { radius = it },
-                    valueRange = 1f..50f
-                )
-                Text("Default radius for $transport: ${defaultRadius(transport).toInt()} km. You can adjust it above.")
-
-                Text("Maximum budget: $" + budget.toInt() + " CAD / night")
-                Slider(value = budget, onValueChange = { budget = it }, valueRange = 20f..100f)
-
-                Button(
-                    onClick = { },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = origin.isNotBlank() &&
-                        destination.isNotBlank() &&
-                        selectedTypes.isNotEmpty()
-                ) {
-                    Text("Search stays")
-                }
-
                 Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("Your search results will appear here.")
-                        Text("Search filters are saved in this screen. Live prices, availability and map search are not connected yet.")
-                    }
-                }
-            }
-        }
-    }
-
-    if (showCheckInPicker) {
-        val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(checkIn))
-        DatePickerDialog(
-            onDismissRequest = { showCheckInPicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    pickerState.selectedDateMillis?.let { selected ->
-                        checkIn = millisToDate(selected)
-                        val outDate = dateToMillis(checkOut)
-                        if (outDate != null && outDate <= selected) checkOut = ""
-                    }
-                    showCheckInPicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCheckInPicker = false }) { Text("Cancel") }
-            }
-        ) {
-            DatePicker(state = pickerState)
-        }
-    }
-
-    if (showCheckOutPicker) {
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = dateToMillis(checkOut),
-            initialDisplayedMonthMillis = dateToMillis(checkIn)
-        )
-        DatePickerDialog(
-            onDismissRequest = { showCheckOutPicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    pickerState.selectedDateMillis?.let { selected ->
-                        val inDate = dateToMillis(checkIn)
-                        if (inDate == null || selected > inDate) {
-                            checkOut = millisToDate(selected)
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Plan your route", style = MaterialTheme.typography.titleLarge)
+                        OutlinedTextField(value = origin, onValueChange = { origin = it },
+                            label = { Text("From") }, placeholder = { Text("e.g. Langford, BC") },
+                            modifier = Modifier.fillMaxWidth(), singleLine = true)
+                        OutlinedTextField(value = destination, onValueChange = { destination = it },
+                            label = { Text("To") }, placeholder = { Text("e.g. Kelowna, BC") },
+                            modifier = Modifier.fillMaxWidth(), singleLine = true)
+                        OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
+                            Text(if (travelDate.isBlank()) "Departure date · Choose date" else "Departure · $travelDate")
+                        }
+                        HorizontalDivider()
+                        Text("Travellers", style = MaterialTheme.typography.titleMedium)
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                            OutlinedButton(onClick = { if (travellers > 1) travellers-- }, enabled = travellers > 1) { Text("−") }
+                            Text("$travellers ${if (travellers == 1) "traveller" else "travellers"}",
+                                style = MaterialTheme.typography.titleMedium)
+                            OutlinedButton(onClick = { if (travellers < 20) travellers++ }, enabled = travellers < 20) { Text("+") }
+                            Spacer(Modifier.weight(1f))
+                            Text(if (travellers == 1) "Solo trip" else "Group trip",
+                                color = MaterialTheme.colorScheme.primary)
                         }
                     }
-                    showCheckOutPicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCheckOutPicker = false }) { Text("Cancel") }
+                }
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Compare transport", style = MaterialTheme.typography.titleLarge)
+                        Text("Choose what to include. EasyWay will compare all selected options.")
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            transportOptions.forEach { mode ->
+                                FilterChip(selected = mode in selectedTransport, onClick = {
+                                    if (mode in selectedTransport) selectedTransport.remove(mode)
+                                    else selectedTransport.add(mode)
+                                }, label = { Text(mode) })
+                            }
+                        }
+                        Text("Budget", style = MaterialTheme.typography.titleMedium)
+                        Text("No limit · Show all available prices", color = MaterialTheme.colorScheme.primary)
+                        Text("Compare total trip cost, each travel leg, transfers and waiting time.")
+                    }
+                }
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Overnight stays", style = MaterialTheme.typography.titleLarge)
+                        Text("No overnight stops are added unless you ask for them.")
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Checkbox(checked = includeOvernight, onCheckedChange = { includeOvernight = it })
+                            Text("Include an overnight stay")
+                        }
+                        if (includeOvernight) {
+                            Text("Accommodation types")
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                overnightOptions.forEach { type ->
+                                    FilterChip(selected = type in selectedOvernight, onClick = {
+                                        if (type in selectedOvernight) selectedOvernight.remove(type)
+                                        else selectedOvernight.add(type)
+                                    }, label = { Text(type) })
+                                }
+                            }
+                        }
+                    }
+                }
+                Button(onClick = { showSearchInfo = true }, modifier = Modifier.fillMaxWidth(),
+                    enabled = origin.isNotBlank() && destination.isNotBlank() &&
+                        origin.trim() != destination.trim() && selectedTransport.isNotEmpty()) {
+                    Text("Compare all routes")
+                }
+                if (showSearchInfo) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("Your trip details are ready", style = MaterialTheme.typography.titleMedium)
+                            Text("Live transport schedules, fares and route results are not connected yet. They will be added in the next development stage.")
+                            Text("No prices or availability are being estimated or shown as confirmed.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+                Text("Canada first · More destinations can come later",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        ) {
-            DatePicker(state = pickerState)
         }
+    }
+    if (showDatePicker) {
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(travelDate))
+        DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+            TextButton(onClick = {
+                pickerState.selectedDateMillis?.let { travelDate = millisToDate(it) }
+                showDatePicker = false
+            }) { Text("Done") }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+        }) { DatePicker(state = pickerState) }
     }
 }
