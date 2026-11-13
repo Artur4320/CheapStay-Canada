@@ -32,6 +32,8 @@ private fun millisToDate(millis: Long): String =
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun EasyWayApp() {
+    var language by remember { mutableStateOf("EN") }
+    val french = language == "FR"
     var origin by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
     var travelDate by remember { mutableStateOf("") }
@@ -61,11 +63,16 @@ fun EasyWayApp() {
                 Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("EasyWay", style = MaterialTheme.typography.headlineLarge)
-                    Text("Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
-                    Text("Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("EasyWay", style = MaterialTheme.typography.headlineLarge)
+                        Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
+                        Text(if (french) "Planifiez vos déplacements partout au Canada" else "Plan journeys across Canada", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        FilterChip(selected = !french, onClick = { language = "EN" }, label = { Text("EN") })
+                        FilterChip(selected = french, onClick = { language = "FR" }, label = { Text("FR") })
+                    }
                 }
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
