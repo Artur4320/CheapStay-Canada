@@ -10,6 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,6 +22,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+private fun dateToMillis(date: String): Long? = try {
+    LocalDate.parse(date, dateFormatter).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+} catch (_: Exception) {
+    null
+}
+
+private fun millisToDate(millis: Long): String =
+    Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate().format(dateFormatter)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheapStayApp() {
     var origin by remember { mutableStateOf("") }
@@ -26,6 +42,8 @@ fun CheapStayApp() {
     var transport by remember { mutableStateOf("Car") }
     var checkIn by remember { mutableStateOf("") }
     var checkOut by remember { mutableStateOf("") }
+    var showCheckInPicker by remember { mutableStateOf(false) }
+    var showCheckOutPicker by remember { mutableStateOf(false) }
     var guests by remember { mutableIntStateOf(2) }
     var radius by remember { mutableFloatStateOf(25f) }
     val stayTypes = listOf("Hotel", "Motel", "Hostel", "Camping", "RV site", "Cabin")
@@ -85,20 +103,18 @@ fun CheapStayApp() {
                 }
 
                 Text("Stay dates")
-                OutlinedTextField(
-                    value = checkIn,
-                    onValueChange = { checkIn = it },
-                    label = { Text("Check-in (YYYY-MM-DD)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = checkOut,
-                    onValueChange = { checkOut = it },
-                    label = { Text("Check-out (YYYY-MM-DD)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                OutlinedButton(
+                    onClick = { showCheckInPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (checkIn.isBlank()) "Check-in: Select date" else "Check-in: $checkIn")
+                }
+                OutlinedButton(
+                    onClick = { showCheckOutPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (checkOut.isBlank()) "Check-out: Select date" else "Check-out: $checkOut")
+                }
 
                 Text("Guests: $guests")
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -154,6 +170,54 @@ fun CheapStayApp() {
                     }
                 }
             }
+        }
+    }
+
+    if (showCheckInPicker) {
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(checkIn))
+        DatePickerDialog(
+            onDismissRequest = { showCheckInPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { selected ->
+                        checkIn = millisToDate(selected)
+                        val outDate = dateToMillis(checkOut)
+                        if (outDate != null && outDate <= selected) checkOut = ""
+                    }
+                    showCheckInPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCheckInPicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+
+    if (showCheckOutPicker) {
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = dateToMillis(checkOut),
+            initialDisplayedMonthMillis = dateToMillis(checkIn)
+        )
+        DatePickerDialog(
+            onDismissRequest = { showCheckOutPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { selected ->
+                        val inDate = dateToMillis(checkIn)
+                        if (inDate == null || selected > inDate) {
+                            checkOut = millisToDate(selected)
+                        }
+                    }
+                    showCheckOutPicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCheckOutPicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = pickerState)
         }
     }
 }
