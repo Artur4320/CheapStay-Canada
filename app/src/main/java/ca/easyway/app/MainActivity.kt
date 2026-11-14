@@ -55,20 +55,66 @@ fun EasyWayApp() {
     var origin by remember { mutableStateOf("") }
     var locationMessage by remember { mutableStateOf("") }
     val locationManager = remember { context.getSystemService(android.content.Context.LOCATION_SERVICE) as LocationManager }
+    val fetchCurrentLocation: () -> Unit = {
+        locationMessage = if (french) "Recherche de votre position…" else "Finding your location…"
+        try {
+            val provider = when {
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+                else -> null
+            }
+            if (provider == null) {
+                locationMessage = if (french) "Activez la localisation et réessayez." else "Turn on Location services and try again."
+            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                locationManager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
+                    if (location != null) {
+                        try {
+                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
+                            origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
+                        } catch (_: Exception) {
+                            origin = "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Coordonnées ajoutées. Vérifiez l’adresse." else "Coordinates added. Please check the address."
+                        }
+                    } else {
+                        locationMessage = if (french) "Position introuvable. Saisissez votre ville manuellement." else "Could not get a location fix. Enter your city manually."
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                locationManager.requestSingleUpdate(provider, object : android.location.LocationListener {
+                    override fun onLocationChanged(location: android.location.Location) {
+                        try {
+                            @Suppress("DEPRECATION")
+                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
+                            origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
+                        } catch (_: Exception) {
+                            origin = "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Coordonnées ajoutées. Vérifiez l’adresse." else "Coordinates added. Please check the address."
+                        }
+                    }
+                    override fun onProviderDisabled(providerName: String) {
+                        locationMessage = if (french) "Activez la localisation et réessayez." else "Turn on Location services and try again."
+                    }
+                    override fun onProviderEnabled(providerName: String) {}
+                    @Deprecated("Deprecated in Java")
+                    override fun onStatusChanged(providerName: String?, status: Int, extras: android.os.Bundle?) {}
+                }, android.os.Looper.getMainLooper())
+            }
+        } catch (_: SecurityException) {
+            locationMessage = if (french) "Autorisation refusée. Saisissez votre ville manuellement." else "Location permission denied. Enter your city manually."
+        } catch (_: Exception) {
+            locationMessage = if (french) "Position indisponible. Saisissez votre ville manuellement." else "Location unavailable. Enter your city manually."
+        }
+    }
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
         if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == true || grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            try {
-                val provider = if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER
-                @Suppress("MissingPermission")
-                val location = locationManager.getLastKnownLocation(provider)
-                if (location != null) {
-                    val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
-                    origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
-                    locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
-                } else locationMessage = if (french) "Position indisponible. Saisissez votre adresse manuellement." else "Location unavailable. Enter your address manually."
-            } catch (_: Exception) { locationMessage = if (french) "Position indisponible. Saisissez votre adresse manuellement." else "Location unavailable. Enter your address manually." }
-        } else locationMessage = if (french) "Autorisation refusée. Saisissez votre adresse manuellement." else "Permission denied. Enter your address manually."
+            fetchCurrentLocation()
+        } else {
+            locationMessage = if (french) "Autorisation refusée. Saisissez votre ville manuellement." else "Permission denied. Enter your city manually."
+        }
     }
     var destination by remember { mutableStateOf("") }
     var currentPage by remember { mutableIntStateOf(0) }
@@ -119,7 +165,12 @@ fun EasyWayApp() {
                                 label = { Text(if (french) "Ville de départ" else "Starting city") },
                                 placeholder = { Text(if (french) "e.g. Victoria, BC" else "e.g. Victoria, BC") },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true)
-                            OutlinedButton(onClick = { locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }, modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(onClick = {
+                                val fineGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                val coarseGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                if (fineGranted || coarseGranted) fetchCurrentLocation()
+                                else locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                            }, modifier = Modifier.fillMaxWidth()) {
                                 Text(if (french) "Utiliser ma position" else "Use my location")
                             }
                             if (locationMessage.isNotBlank()) Text(locationMessage, style = MaterialTheme.typography.bodySmall)
