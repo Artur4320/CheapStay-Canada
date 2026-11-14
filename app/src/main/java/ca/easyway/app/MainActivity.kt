@@ -68,6 +68,42 @@ private val allCanadianCities = canadianCitiesByRegion.values.flatten().distinct
 private fun citiesForRegion(region: String): List<String> =
     if (region == "ALL" || region.isBlank()) allCanadianCities else canadianCitiesByRegion[region].orEmpty()
 
+// Choose a recognizable nearby city instead of filling the field with a street address.
+private fun nearbyKnownCity(location: android.location.Location, region: String): String? {
+    if (region == "British Columbia") {
+        val candidates = listOf(
+            Triple("Victoria", 48.4284, -123.3656),
+            Triple("Sidney", 48.6500, -123.3980),
+            Triple("Langford", 48.4480, -123.5040),
+            Triple("Sooke", 48.3740, -123.7370)
+        )
+        val nearest = candidates.minByOrNull { (_, lat, lon) ->
+            val target = android.location.Location("city").apply {
+                latitude = lat
+                longitude = lon
+            }
+            location.distanceTo(target)
+        }
+        if (nearest != null) {
+            val target = android.location.Location("city").apply {
+                latitude = nearest.second
+                longitude = nearest.third
+            }
+            if (location.distanceTo(target) <= 45000f) return nearest.first
+        }
+    }
+    return null
+}
+
+private fun cityNameFromAddress(address: android.location.Address?, region: String): String? {
+    if (address == null) return null
+    val known = citiesForRegion(region)
+    val candidates = listOfNotNull(address.locality, address.subLocality, address.subAdminArea, address.featureName)
+    return candidates.firstNotNullOfOrNull { candidate ->
+        known.firstOrNull { it.equals(candidate.trim(), ignoreCase = true) }
+    } ?: address.locality ?: address.subAdminArea
+}
+
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 private fun dateToMillis(date: String): Long? = try {
     LocalDate.parse(date, dateFormatter).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
@@ -105,9 +141,13 @@ fun EasyWayApp() {
                 locationManager.getCurrentLocation(provider, null, context.mainExecutor) { location ->
                     if (location != null) {
                         try {
-                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
-                            origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
-                            locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
+                            @Suppress("DEPRECATION")
+                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 5)
+                            val address = addresses?.firstOrNull()
+                            origin = nearbyKnownCity(location, selectedRegion)
+                                ?: cityNameFromAddress(address, selectedRegion)
+                                ?: "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Ville détectée : $origin" else "Detected city: $origin"
                         } catch (_: Exception) {
                             origin = "${location.latitude}, ${location.longitude}"
                             locationMessage = if (french) "Coordonnées ajoutées. Vérifiez l’adresse." else "Coordinates added. Please check the address."
@@ -122,9 +162,13 @@ fun EasyWayApp() {
                     override fun onLocationChanged(location: android.location.Location) {
                         try {
                             @Suppress("DEPRECATION")
-                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 1)
-                            origin = addresses?.firstOrNull()?.getAddressLine(0) ?: "${location.latitude}, ${location.longitude}"
-                            locationMessage = if (french) "Position ajoutée. Vérifiez l’adresse." else "Location added. Please check the address."
+                            @Suppress("DEPRECATION")
+                            val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 5)
+                            val address = addresses?.firstOrNull()
+                            origin = nearbyKnownCity(location, selectedRegion)
+                                ?: cityNameFromAddress(address, selectedRegion)
+                                ?: "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Ville détectée : $origin" else "Detected city: $origin"
                         } catch (_: Exception) {
                             origin = "${location.latitude}, ${location.longitude}"
                             locationMessage = if (french) "Coordonnées ajoutées. Vérifiez l’adresse." else "Coordinates added. Please check the address."
@@ -159,14 +203,16 @@ fun EasyWayApp() {
     LaunchedEffect(origin, selectedRegion) {
         val query = origin.trim()
         originSuggestions = citiesForRegion(selectedRegion)
-            .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
+            .filter { query.isBlank() || it.startsWith(query, ignoreCase = true) }
             .filterNot { it.equals(query, ignoreCase = true) }
             .take(7)
     }
     LaunchedEffect(destination, destinationRegion) {
         val query = destination.trim()
-        destinationSuggestions = citiesForRegion(destinationRegion)
-            .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
+        val cities = citiesForRegion(destinationRegion)
+        destinationSuggestions = (if (query.isBlank() && destinationRegion == "British Columbia") listOf("Vancouver") + cities else cities)
+            .distinct()
+            .filter { query.isBlank() || it.startsWith(query, ignoreCase = true) }
             .filterNot { it.equals(query, ignoreCase = true) }
             .take(7)
     }
