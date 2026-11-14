@@ -277,7 +277,7 @@ fun EasyWayApp() {
                                 }
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
-                            TextButton(onClick = { currentPage = 2 }) { Text(if (french) "Retour" else "Back") }
+                            TextButton(onClick = { currentPage = 0 }) { Text(if (french) "Retour" else "Back") }
                         }
                     }
                 } else if (currentPage == 2) {
@@ -385,7 +385,7 @@ fun EasyWayApp() {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text(if (french) "Options de voyage" else "Travel options", style = MaterialTheme.typography.titleLarge)
-                        TextButton(onClick = { currentPage = 0 }) { Text(if (french) "Retour" else "Back") }
+                        TextButton(onClick = { currentPage = 2 }) { Text(if (french) "Retour" else "Back") }
                     }
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
