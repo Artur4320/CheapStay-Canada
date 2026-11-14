@@ -145,6 +145,7 @@ fun EasyWayApp() {
     var showRegionDialog by remember { mutableStateOf(selectedRegion.isBlank()) }
     var origin by remember { mutableStateOf("") }
     var originSuggestions by remember { mutableStateOf(emptyList<String>()) }
+    var showOriginSuggestions by remember { mutableStateOf(false) }
     var destinationSuggestions by remember { mutableStateOf(emptyList<String>()) }
     var cityValidationMessage by remember { mutableStateOf("") }
     var isValidatingCities by remember { mutableStateOf(false) }
@@ -224,10 +225,12 @@ fun EasyWayApp() {
     val regionOptions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
     LaunchedEffect(origin, selectedRegion) {
         val query = origin.trim()
-        originSuggestions = citiesForRegion(selectedRegion)
+        val priorityCities = if (selectedRegion == "British Columbia") listOf("Vancouver", "Victoria") else emptyList()
+        originSuggestions = (priorityCities + citiesForRegion(selectedRegion))
+            .distinct()
             .filter { query.isBlank() || it.startsWith(query, ignoreCase = true) }
             .filterNot { it.equals(query, ignoreCase = true) }
-            .take(7)
+            .take(10)
     }
     LaunchedEffect(destination, destinationRegion) {
         val query = destination.trim()
@@ -356,16 +359,34 @@ fun EasyWayApp() {
                     ) {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
-                            OutlinedTextField(value = origin, onValueChange = { origin = it; cityValidationMessage = "" },
-                                label = { Text(if (french) "Ville de départ" else "Starting city") },
-                                placeholder = { Text(if (french) "e.g. Victoria, BC" else "e.g. Victoria, BC") },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true)
-                            Text(if (french) "Villes de la région" else "Cities in selected region",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            originSuggestions.forEach { suggestion ->
-                                TextButton(onClick = { origin = suggestion; originSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                            Box(Modifier.fillMaxWidth()) {
+                                OutlinedTextField(
+                                    value = origin,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text(if (french) "Ville de départ" else "Starting city") },
+                                    placeholder = { Text(if (french) "Choisir une ville" else "Select a city") },
+                                    modifier = Modifier.fillMaxWidth().clickable { showOriginSuggestions = true },
+                                    singleLine = true,
+                                    trailingIcon = {
+                                        Text("▾", modifier = Modifier.clickable { showOriginSuggestions = !showOriginSuggestions }.padding(8.dp))
+                                    }
+                                )
+                                DropdownMenu(
+                                    expanded = showOriginSuggestions,
+                                    onDismissRequest = { showOriginSuggestions = false },
+                                    modifier = Modifier.fillMaxWidth(0.82f).heightIn(max = 320.dp)
+                                ) {
+                                    originSuggestions.forEach { suggestion ->
+                                        DropdownMenuItem(
+                                            text = { Text(suggestion) },
+                                            onClick = {
+                                                origin = suggestion
+                                                showOriginSuggestions = false
+                                                cityValidationMessage = ""
+                                            }
+                                        )
+                                    }
                                 }
                             }
                             OutlinedButton(onClick = {
