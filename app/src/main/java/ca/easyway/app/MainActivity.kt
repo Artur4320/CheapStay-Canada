@@ -277,7 +277,7 @@ fun EasyWayApp() {
                     )
                     Box(Modifier.fillMaxSize().background(Color(0xFF0B4FA8).copy(alpha = 0.10f)))
                 } else {
-                    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+                    Box(Modifier.fillMaxSize().background(Color.White))
                 }
                 Column(
                     Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 20.dp),
@@ -285,7 +285,7 @@ fun EasyWayApp() {
                 ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                        Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge, color = if (selectedRegion == "British Columbia") Color.White else Color(0xFF172033))
                         TextButton(onClick = { showRegionDialog = true }, contentPadding = PaddingValues(0.dp)) {
                             Text(if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion, color = Color(0xFF45E2D0), style = MaterialTheme.typography.titleMedium)
                         }
