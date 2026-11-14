@@ -235,7 +235,7 @@ fun EasyWayApp() {
                                 Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                     Text("🏞️", style = MaterialTheme.typography.headlineMedium)
                                     Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                                        Text(if (french) "Rester en $selectedRegion" else "Stay in $selectedRegion", style = MaterialTheme.typography.titleMedium)
+                                        Text(if (selectedRegion == "ALL") { if (french) "Voyager partout au Canada" else "Travel anywhere in Canada" } else if (french) "Rester en $selectedRegion" else "Stay in $selectedRegion", style = MaterialTheme.typography.titleMedium)
                                         Text(if (french) "Voyager dans la région choisie" else "Travel within your selected region", style = MaterialTheme.typography.bodySmall)
                                     }
                                     RadioButton(selected = !travelOutsideRegion, onClick = { travelOutsideRegion = false; destinationRegion = selectedRegion })
