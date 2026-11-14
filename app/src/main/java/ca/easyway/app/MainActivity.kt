@@ -9,6 +9,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -56,6 +59,8 @@ fun EasyWayApp() {
     var selectedRegion by remember { mutableStateOf(preferences.getString("travel_region", "") ?: "") }
     var showRegionDialog by remember { mutableStateOf(selectedRegion.isBlank()) }
     var origin by remember { mutableStateOf("") }
+    var originSuggestions by remember { mutableStateOf(emptyList<String>()) }
+    var destinationSuggestions by remember { mutableStateOf(emptyList<String>()) }
     var cityValidationMessage by remember { mutableStateOf("") }
     var isValidatingCities by remember { mutableStateOf(false) }
     var locationMessage by remember { mutableStateOf("") }
@@ -122,6 +127,44 @@ fun EasyWayApp() {
         }
     }
     var destination by remember { mutableStateOf("") }
+    LaunchedEffect(origin, selectedRegion) {
+        originSuggestions = emptyList()
+        val query = origin.trim()
+        if (query.length >= 2) {
+            delay(400)
+            originSuggestions = withContext(Dispatchers.IO) {
+                try {
+                    @Suppress("DEPRECATION")
+                    val results = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 8)
+                    results.orEmpty().filter { address ->
+                        address.countryCode.equals("CA", true) &&
+                            (selectedRegion == "ALL" || address.adminArea.equals(selectedRegion, true) ||
+                                (selectedRegion == "British Columbia" && address.adminArea.equals("BC", true)))
+                    }.mapNotNull { it.locality ?: it.subAdminArea }
+                        .distinctBy { it.lowercase(Locale.ROOT) }.take(5)
+                } catch (_: Exception) { emptyList() }
+            }
+        }
+    }
+    LaunchedEffect(destination, selectedRegion) {
+        destinationSuggestions = emptyList()
+        val query = destination.trim()
+        if (query.length >= 2) {
+            delay(400)
+            destinationSuggestions = withContext(Dispatchers.IO) {
+                try {
+                    @Suppress("DEPRECATION")
+                    val results = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 8)
+                    results.orEmpty().filter { address ->
+                        address.countryCode.equals("CA", true) &&
+                            (selectedRegion == "ALL" || address.adminArea.equals(selectedRegion, true) ||
+                                (selectedRegion == "British Columbia" && address.adminArea.equals("BC", true)))
+                    }.mapNotNull { it.locality ?: it.subAdminArea }
+                        .distinctBy { it.lowercase(Locale.ROOT) }.take(5)
+                } catch (_: Exception) { emptyList() }
+            }
+        }
+    }
     var currentPage by remember { mutableIntStateOf(0) }
     var travelDate by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -166,10 +209,15 @@ fun EasyWayApp() {
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
-                            OutlinedTextField(value = origin, onValueChange = { origin = it },
+                            OutlinedTextField(value = origin, onValueChange = { origin = it; cityValidationMessage = "" },
                                 label = { Text(if (french) "Ville de départ" else "Starting city") },
                                 placeholder = { Text(if (french) "e.g. Victoria, BC" else "e.g. Victoria, BC") },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            originSuggestions.forEach { suggestion ->
+                                TextButton(onClick = { origin = suggestion; originSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
+                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                                }
+                            }
                             OutlinedButton(onClick = {
                                 val fineGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                 val coarseGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -179,10 +227,15 @@ fun EasyWayApp() {
                                 Text(if (french) "Utiliser ma position" else "Use my location")
                             }
                             if (locationMessage.isNotBlank()) Text(locationMessage, style = MaterialTheme.typography.bodySmall)
-                            OutlinedTextField(value = destination, onValueChange = { destination = it },
+                            OutlinedTextField(value = destination, onValueChange = { destination = it; cityValidationMessage = "" },
                                 label = { Text(if (french) "Ville de destination" else "Destination city") },
                                 placeholder = { Text(if (french) "e.g. Kelowna, BC" else "e.g. Kelowna, BC") },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            destinationSuggestions.forEach { suggestion ->
+                                TextButton(onClick = { destination = suggestion; destinationSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
+                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                                }
+                            }
                             OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
                                 Text(if (travelDate.isBlank()) { if (french) "Date de départ · Choisir" else "When · Choose departure date" } else { if (french) "Départ · $travelDate" else "Departure · $travelDate" })
                             }
