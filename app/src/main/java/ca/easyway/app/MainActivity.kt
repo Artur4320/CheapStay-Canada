@@ -617,103 +617,40 @@ private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box(Modifier.size(width = 25.dp, height = 17.dp)) {
-        Canvas(Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            if (french) {
-                // Quebec flag: royal-blue field, white cross, four white fleur-de-lis.
-                drawRect(Color(0xFF003399))
-                drawRect(Color.White, topLeft = Offset(w * .43f, 0f), size = androidx.compose.ui.geometry.Size(w * .14f, h))
-                drawRect(Color.White, topLeft = Offset(0f, h * .42f), size = androidx.compose.ui.geometry.Size(w, h * .16f))
-                fun fleur(cx: Float, cy: Float, unit: Float) {
-                    val p = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(cx, cy - 4.4f * unit)
-                        cubicTo(cx - 1.0f * unit, cy - 3.2f * unit, cx - 1.1f * unit, cy - 1.8f * unit, cx - .55f * unit, cy - .65f * unit)
-                        cubicTo(cx - 2.5f * unit, cy - 2.0f * unit, cx - 4.0f * unit, cy - 1.5f * unit, cx - 4.0f * unit, cy - .1f * unit)
-                        cubicTo(cx - 4.0f * unit, cy + 1.1f * unit, cx - 2.6f * unit, cy + 1.5f * unit, cx - 1.25f * unit, cy + .7f * unit)
-                        lineTo(cx - 1.25f * unit, cy + 1.6f * unit)
-                        lineTo(cx + 1.25f * unit, cy + 1.6f * unit)
-                        lineTo(cx + 1.25f * unit, cy + .7f * unit)
-                        cubicTo(cx + 2.6f * unit, cy + 1.5f * unit, cx + 4.0f * unit, cy + 1.1f * unit, cx + 4.0f * unit, cy - .1f * unit)
-                        cubicTo(cx + 4.0f * unit, cy - 1.5f * unit, cx + 2.5f * unit, cy - 2.0f * unit, cx + .55f * unit, cy - .65f * unit)
-                        cubicTo(cx + 1.1f * unit, cy - 1.8f * unit, cx + 1.0f * unit, cy - 3.2f * unit, cx, cy - 4.4f * unit)
-                        close()
-                        moveTo(cx - .65f * unit, cy + 1.5f * unit)
-                        lineTo(cx + .65f * unit, cy + 1.5f * unit)
-                        lineTo(cx + .45f * unit, cy + 3.1f * unit)
-                        lineTo(cx, cy + 3.7f * unit)
-                        lineTo(cx - .45f * unit, cy + 3.1f * unit)
-                        close()
-                    }
-                    drawPath(p, Color.White)
+        Box(Modifier.size(width = 30.dp, height = 20.dp)) {
+            Canvas(Modifier.fillMaxSize()) {
+                val w = size.width
+                val h = size.height
+                if (french) {
+                    // French national flag: blue, white and red vertical bands.
+                    drawRect(Color(0xFF0055A4), size = androidx.compose.ui.geometry.Size(w / 3f, h))
+                    drawRect(Color.White, topLeft = Offset(w / 3f, 0f), size = androidx.compose.ui.geometry.Size(w / 3f, h))
+                    drawRect(Color(0xFFEF4135), topLeft = Offset(2f * w / 3f, 0f), size = androidx.compose.ui.geometry.Size(w / 3f, h))
+                } else {
+                    // United Kingdom flag (Union Jack).
+                    drawRect(Color(0xFF012169))
+                    drawLine(Color.White, Offset(0f, 0f), Offset(w, h), h * 0.34f)
+                    drawLine(Color.White, Offset(w, 0f), Offset(0f, h), h * 0.34f)
+                    drawLine(Color(0xFFC8102E), Offset(0f, 0f), Offset(w, h), h * 0.13f)
+                    drawLine(Color(0xFFC8102E), Offset(w, 0f), Offset(0f, h), h * 0.13f)
+                    drawRect(Color.White, topLeft = Offset(w * 0.39f, 0f), size = androidx.compose.ui.geometry.Size(w * 0.22f, h))
+                    drawRect(Color.White, topLeft = Offset(0f, h * 0.36f), size = androidx.compose.ui.geometry.Size(w, h * 0.28f))
+                    drawRect(Color(0xFFC8102E), topLeft = Offset(w * 0.44f, 0f), size = androidx.compose.ui.geometry.Size(w * 0.12f, h))
+                    drawRect(Color(0xFFC8102E), topLeft = Offset(0f, h * 0.43f), size = androidx.compose.ui.geometry.Size(w, h * 0.14f))
                 }
-                fleur(w * .25f, h * .25f, h * .095f)
-                fleur(w * .75f, h * .25f, h * .095f)
-                fleur(w * .25f, h * .75f, h * .095f)
-                fleur(w * .75f, h * .75f, h * .095f)
-            } else {
-                // British Columbia flag: Union Jack, crowned sun, and blue-white waves.
-                drawRect(Color(0xFF003DA5))
-                val unionW = w * .50f
-                val unionH = h * .48f
-                drawRect(Color(0xFF012169), size = androidx.compose.ui.geometry.Size(unionW, unionH))
-                drawLine(Color.White, Offset(0f, 0f), Offset(unionW, unionH), h * .22f)
-                drawLine(Color.White, Offset(unionW, 0f), Offset(0f, unionH), h * .22f)
-                drawLine(Color(0xFFC8102E), Offset(0f, 0f), Offset(unionW, unionH), h * .075f)
-                drawLine(Color(0xFFC8102E), Offset(unionW, 0f), Offset(0f, unionH), h * .075f)
-                drawRect(Color.White, topLeft = Offset(unionW * .40f, 0f), size = androidx.compose.ui.geometry.Size(unionW * .20f, unionH))
-                drawRect(Color.White, topLeft = Offset(0f, unionH * .40f), size = androidx.compose.ui.geometry.Size(unionW, unionH * .20f))
-                drawRect(Color(0xFFC8102E), topLeft = Offset(unionW * .46f, 0f), size = androidx.compose.ui.geometry.Size(unionW * .08f, unionH))
-                drawRect(Color(0xFFC8102E), topLeft = Offset(0f, unionH * .46f), size = androidx.compose.ui.geometry.Size(unionW, unionH * .08f))
-
-                // White and blue horizontal waves.
-                val waveY = h * .52f
-                val bands = listOf(Color.White, Color(0xFF003DA5), Color.White, Color(0xFF003DA5), Color.White)
-                bands.forEachIndexed { i, color ->
-                    drawRect(color, topLeft = Offset(0f, waveY + i * h * .096f),
-                        size = androidx.compose.ui.geometry.Size(w, h * .096f))
-                }
-                // Golden rising sun and pointed rays at the lower edge.
-                val sunX = w * .73f
-                val sunBaseY = h * 1.16f
-                for (i in 0..10) {
-                    val angle = Math.PI * (1.08 + i * .084)
-                    val inner = h * .28f
-                    val outer = h * if (i % 2 == 0) .72f else .57f
-                    val x1 = sunX + kotlin.math.cos(angle).toFloat() * inner
-                    val y1 = sunBaseY + kotlin.math.sin(angle).toFloat() * inner
-                    val x2 = sunX + kotlin.math.cos(angle).toFloat() * outer
-                    val y2 = sunBaseY + kotlin.math.sin(angle).toFloat() * outer
-                    drawLine(Color(0xFFFFC72C), Offset(x1, y1), Offset(x2, y2), h * .085f)
-                }
-                drawCircle(Color(0xFFFFC72C), radius = h * .36f, center = Offset(sunX, sunBaseY))
-                // Small gold crown above the Union Jack.
-                val crown = androidx.compose.ui.graphics.Path().apply {
-                    moveTo(w * .61f, h * .40f)
-                    lineTo(w * .64f, h * .18f)
-                    lineTo(w * .68f, h * .34f)
-                    lineTo(w * .72f, h * .12f)
-                    lineTo(w * .76f, h * .34f)
-                    lineTo(w * .80f, h * .18f)
-                    lineTo(w * .83f, h * .40f)
-                    close()
-                }
-                drawPath(crown, Color(0xFFFFC72C))
             }
-        }
-        Text(
-            language,
-            modifier = Modifier.align(androidx.compose.ui.Alignment.Center)
-                .clip(RoundedCornerShape(3.dp))
-                .background(Color.Black.copy(alpha = 0.58f))
-                .padding(horizontal = 2.dp, vertical = 0.dp),
-            color = Color.White,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 8.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold
+            Text(
+                language,
+                modifier = Modifier.align(androidx.compose.ui.Alignment.Center)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Color.Black.copy(alpha = 0.58f))
+                    .padding(horizontal = 2.dp, vertical = 0.dp),
+                color = Color.White,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 8.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold
+                )
             )
-        )
         }
     }
 }
