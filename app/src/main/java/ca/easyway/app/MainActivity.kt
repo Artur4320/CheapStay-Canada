@@ -25,6 +25,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.time.Instant
+import java.util.concurrent.Executors
+import android.os.Handler
+import android.os.Looper
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -53,6 +56,8 @@ fun EasyWayApp() {
     var selectedRegion by remember { mutableStateOf(preferences.getString("travel_region", "") ?: "") }
     var showRegionDialog by remember { mutableStateOf(selectedRegion.isBlank()) }
     var origin by remember { mutableStateOf("") }
+    var cityValidationMessage by remember { mutableStateOf("") }
+    var isValidatingCities by remember { mutableStateOf(false) }
     var locationMessage by remember { mutableStateOf("") }
     val locationManager = remember { context.getSystemService(android.content.Context.LOCATION_SERVICE) as LocationManager }
     val fetchCurrentLocation: () -> Unit = {
@@ -184,11 +189,59 @@ fun EasyWayApp() {
                         }
                     }
                     Button(
-                        onClick = { currentPage = 1 },
+                        onClick = {
+                            cityValidationMessage = ""
+                            isValidatingCities = true
+                            val fromText = origin.trim()
+                            val toText = destination.trim()
+                            val regionAtSearch = selectedRegion
+                            Executors.newSingleThreadExecutor().execute {
+                                fun findCanadianCity(query: String): android.location.Address? {
+                                    return try {
+                                        @Suppress("DEPRECATION")
+                                        val matches = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 5)
+                                        val wanted = query.substringBefore(",").trim().lowercase(Locale.ROOT)
+                                        matches?.firstOrNull { address ->
+                                            val countryOk = address.countryCode.equals("CA", ignoreCase = true)
+                                            val provinceOk = regionAtSearch == "ALL" ||
+                                                address.adminArea.equals(regionAtSearch, ignoreCase = true) ||
+                                                (regionAtSearch == "British Columbia" && address.adminArea.equals("BC", ignoreCase = true))
+                                            val names = listOfNotNull(address.locality, address.subAdminArea, address.featureName)
+                                                .map { it.substringBefore(",").trim().lowercase(Locale.ROOT) }
+                                            countryOk && provinceOk && names.any { it == wanted }
+                                        }
+                                    } catch (_: Exception) { null }
+                                }
+                                val fromCity = findCanadianCity(fromText)
+                                val toCity = findCanadianCity(toText)
+                                Handler(Looper.getMainLooper()).post {
+                                    isValidatingCities = false
+                                    when {
+                                        fromCity == null && toCity == null ->
+                                            cityValidationMessage = if (french) "Aucune des deux villes n’a été trouvée dans la région choisie. Vérifiez les noms." else "Neither city was found in the selected region. Check the names."
+                                        fromCity == null ->
+                                            cityValidationMessage = if (french) "Ville de départ introuvable dans la région choisie." else "Starting city not found in the selected region."
+                                        toCity == null ->
+                                            cityValidationMessage = if (french) "Ville de destination introuvable dans la région choisie." else "Destination city not found in the selected region."
+                                        fromCity.locality.equals(toCity.locality, ignoreCase = true) &&
+                                            fromCity.adminArea.equals(toCity.adminArea, ignoreCase = true) ->
+                                            cityValidationMessage = if (french) "Choisissez deux villes différentes." else "Please choose two different cities."
+                                        else -> {
+                                            origin = fromCity.locality ?: fromText
+                                            destination = toCity.locality ?: toText
+                                            currentPage = 1
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = origin.isNotBlank() && destination.isNotBlank() &&
+                        enabled = !isValidatingCities && origin.isNotBlank() && destination.isNotBlank() &&
                             origin.trim() != destination.trim() && travelDate.isNotBlank()
-                    ) { Text(if (french) "Continuer" else "Continue") }
+                    ) { Text(if (isValidatingCities) { if (french) "Vérification…" else "Checking…" } else { if (french) "Continuer" else "Continue" }) }
+                    if (cityValidationMessage.isNotBlank()) {
+                        Text(cityValidationMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
