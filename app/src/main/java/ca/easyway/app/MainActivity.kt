@@ -149,8 +149,8 @@ fun EasyWayApp() {
                                 ?: "${location.latitude}, ${location.longitude}"
                             locationMessage = if (french) "Ville détectée : $origin" else "Detected city: $origin"
                         } catch (_: Exception) {
-                            origin = "${location.latitude}, ${location.longitude}"
-                            locationMessage = if (french) "Coordonnées ajoutées. Vérifiez l’adresse." else "Coordinates added. Please check the address."
+                            origin = nearbyKnownCity(location, selectedRegion) ?: "${location.latitude}, ${location.longitude}"
+                            locationMessage = if (french) "Ville détectée : $origin" else "Detected city: $origin"
                         }
                     } else {
                         locationMessage = if (french) "Position introuvable. Saisissez votre ville manuellement." else "Could not get a location fix. Enter your city manually."
@@ -161,7 +161,6 @@ fun EasyWayApp() {
                 locationManager.requestSingleUpdate(provider, object : android.location.LocationListener {
                     override fun onLocationChanged(location: android.location.Location) {
                         try {
-                            @Suppress("DEPRECATION")
                             @Suppress("DEPRECATION")
                             val addresses = Geocoder(context, Locale.CANADA).getFromLocation(location.latitude, location.longitude, 5)
                             val address = addresses?.firstOrNull()
