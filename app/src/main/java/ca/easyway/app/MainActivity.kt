@@ -256,8 +256,8 @@ fun EasyWayApp() {
 
     MaterialTheme(
         colorScheme = lightColorScheme(
-            primary = androidx.compose.ui.graphics.Color(0xFF176B5B),
-            secondary = androidx.compose.ui.graphics.Color(0xFFDA8A38),
+            primary = androidx.compose.ui.graphics.Color(0xFF1557C0),
+            secondary = androidx.compose.ui.graphics.Color(0xFF20C7B5),
             background = androidx.compose.ui.graphics.Color(0xFFF5F7F5),
             surface = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
             surfaceContainer = androidx.compose.ui.graphics.Color(0xFFFFFFFF),
@@ -269,13 +269,13 @@ fun EasyWayApp() {
         Surface(Modifier.fillMaxSize(), color = Color.Transparent) {
             Box(Modifier.fillMaxSize()) {
                 if (selectedRegion == "British Columbia") {
-                    Box(Modifier.fillMaxSize().background(Color.White))
                     Image(
                         painter = painterResource(id = R.drawable.bc_parliament_bg),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().then(Modifier.alpha(0.48f))
+                        modifier = Modifier.fillMaxSize()
                     )
+                    Box(Modifier.fillMaxSize().background(Color(0xFF0B4FA8).copy(alpha = 0.10f)))
                 } else {
                     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
                 }
@@ -285,9 +285,9 @@ fun EasyWayApp() {
                 ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge)
+                        Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                         TextButton(onClick = { showRegionDialog = true }, contentPadding = PaddingValues(0.dp)) {
-                            Text(if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion)
+                            Text(if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion, color = Color(0xFF45E2D0), style = MaterialTheme.typography.titleMedium)
                         }
                     }
                     LanguageFlagButton(
@@ -297,7 +297,7 @@ fun EasyWayApp() {
                 }
                 if (currentPage == 0) {
                     Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.94f))) {
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.88f))) {
                         Column(Modifier.padding(horizontal = 22.dp, vertical = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(if (french) "Où voyagez-vous ?" else "Where are you travelling?", style = MaterialTheme.typography.headlineSmall)
                             Text(if (french) "Choisissez votre destination" else "Choose your trip area", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -333,7 +333,7 @@ fun EasyWayApp() {
                         }
                     }
                 } else if (currentPage == 1) {
-                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f))) {
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.90f))) {
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(if (french) "Choisir la province de destination" else "Choose destination province", style = MaterialTheme.typography.headlineSmall)
                             Text(if (french) "Sélectionnez votre destination" else "Select where you want to go", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -357,7 +357,7 @@ fun EasyWayApp() {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.88f))
                     ) {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
