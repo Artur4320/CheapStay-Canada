@@ -287,7 +287,7 @@ fun EasyWayApp() {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(if (french) "Votre voyage. Toutes les options. Au même endroit." else "Your trip. Every option. One place.", style = MaterialTheme.typography.bodyLarge, color = if (selectedRegion == "British Columbia") Color.White else Color(0xFF172033))
                         TextButton(onClick = { showRegionDialog = true }, contentPadding = PaddingValues(0.dp)) {
-                            Text(if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion, color = Color(0xFF45E2D0), style = MaterialTheme.typography.titleMedium)
+                            Text((if (selectedRegion == "ALL") (if (french) "Tout le Canada" else "All Canada") else selectedRegion) + "  ⌄", color = Color(0xFF45E2D0), style = MaterialTheme.typography.titleMedium)
                         }
                     }
                     LanguageFlagButton(
@@ -296,43 +296,115 @@ fun EasyWayApp() {
                     )
                 }
                 if (currentPage == 0) {
-                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.88f))) {
-                        Column(Modifier.padding(horizontal = 22.dp, vertical = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Text(if (french) "Où voyagez-vous ?" else "Where are you travelling?", style = MaterialTheme.typography.headlineSmall)
-                            Text(if (french) "Choisissez votre destination" else "Choose your trip area", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Card(Modifier.fillMaxWidth().clickable { travelOutsideRegion = false; destinationRegion = selectedRegion },
+                    Card(
+                        Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.94f))
+                    ) {
+                        Column(
+                            Modifier.padding(horizontal = 22.dp, vertical = 24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                if (french) "Où voyagez-vous ?" else "Where are you travelling?",
+                                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                                color = Color(0xFF101828)
+                            )
+                            Text(
+                                "Куда планируете поездку?",
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
+                                color = Color(0xFF344054)
+                            )
+                            Card(
+                                Modifier.fillMaxWidth().heightIn(min = 104.dp).clickable {
+                                    travelOutsideRegion = false
+                                    destinationRegion = selectedRegion
+                                },
+                                shape = RoundedCornerShape(20.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    if (!travelOutsideRegion) 2.dp else 1.dp,
+                                    if (!travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
+                                ),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF) else Color.White.copy(alpha = 0.82f)
+                                )
+                            ) {
+                                Row(
+                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp),
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                ) {
+                                    Text("🏞️", style = MaterialTheme.typography.headlineLarge)
+                                    Column(Modifier.weight(1f).padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(
+                                            if (selectedRegion == "ALL") "Stay in Canada" else "Stay in $selectedRegion",
+                                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                                            color = Color(0xFF101828)
+                                        )
+                                        Text(
+                                            "Остаться в пределах ${if (selectedRegion == "ALL") "Канады" else if (selectedRegion == "British Columbia") "BC" else selectedRegion}",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = Color(0xFF475467)
+                                        )
+                                    }
+                                    RadioButton(
+                                        selected = !travelOutsideRegion,
+                                        onClick = { travelOutsideRegion = false; destinationRegion = selectedRegion },
+                                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF1769D2))
+                                    )
+                                }
+                            }
+                            Card(
+                                Modifier.fillMaxWidth().heightIn(min = 104.dp).clickable { travelOutsideRegion = true },
+                                shape = RoundedCornerShape(20.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    if (travelOutsideRegion) 2.dp else 1.dp,
+                                    if (travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
+                                ),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF) else Color.White.copy(alpha = 0.82f)
+                                )
+                            ) {
+                                Row(
+                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp),
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                ) {
+                                    Text("🇨🇦", style = MaterialTheme.typography.headlineLarge)
+                                    Column(Modifier.weight(1f).padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(
+                                            if (french) "Voyager dans une autre province" else "Travel to another province",
+                                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                                            color = Color(0xFF101828)
+                                        )
+                                        Text(
+                                            "Поехать в другую провинцию или территорию",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = Color(0xFF475467)
+                                        )
+                                    }
+                                    RadioButton(
+                                        selected = travelOutsideRegion,
+                                        onClick = { travelOutsideRegion = true },
+                                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF1769D2))
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = {
+                                    if (travelOutsideRegion || selectedRegion == "ALL") currentPage = 1
+                                    else { destinationRegion = selectedRegion; currentPage = 2 }
+                                },
+                                modifier = Modifier.fillMaxWidth().height(64.dp),
                                 shape = RoundedCornerShape(18.dp),
-                                border = androidx.compose.foundation.BorderStroke(if (!travelOutsideRegion) 2.dp else 1.dp, if (!travelOutsideRegion) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
-                                colors = CardDefaults.cardColors(containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF) else Color.White)) {
-                                Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                    Text("🏞️", style = MaterialTheme.typography.headlineMedium)
-                                    Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                                        Text(if (selectedRegion == "ALL") { if (french) "Voyager partout au Canada" else "Travel anywhere in Canada" } else if (french) "Rester en $selectedRegion" else "Stay in $selectedRegion", style = MaterialTheme.typography.titleMedium)
-                                        Text(if (french) "Voyager dans la région choisie" else "Travel within your selected region", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                    RadioButton(selected = !travelOutsideRegion, onClick = { travelOutsideRegion = false; destinationRegion = selectedRegion })
-                                }
-                            }
-                            Card(Modifier.fillMaxWidth().clickable { travelOutsideRegion = true }, shape = RoundedCornerShape(18.dp),
-                                border = androidx.compose.foundation.BorderStroke(if (travelOutsideRegion) 2.dp else 1.dp, if (travelOutsideRegion) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
-                                colors = CardDefaults.cardColors(containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF) else Color.White)) {
-                                Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                    Text("🗺️", style = MaterialTheme.typography.headlineMedium)
-                                    Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                                        Text(if (french) "Voyager dans une autre province" else "Travel to another province", style = MaterialTheme.typography.titleMedium)
-                                        Text(if (french) "Choisir une province ou un territoire" else "Choose another province or territory", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                    RadioButton(selected = travelOutsideRegion, onClick = { travelOutsideRegion = true })
-                                }
-                            }
-                            Button(onClick = { if (travelOutsideRegion || selectedRegion == "ALL") currentPage = 1 else { destinationRegion = selectedRegion; currentPage = 2 } },
-                                modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(16.dp)) {
-                                Text(if (french) "Continuer  →" else "Continue  →", style = MaterialTheme.typography.titleMedium)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1268D8))
+                            ) {
+                                Text(
+                                    if (french) "Continuer  →" else "Continue  →",
+                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                                )
                             }
                         }
                     }
-                } else if (currentPage == 1) {
+                }else if (currentPage == 1) {
                     Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.90f))) {
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(if (french) "Choisir la province de destination" else "Choose destination province", style = MaterialTheme.typography.headlineSmall)
