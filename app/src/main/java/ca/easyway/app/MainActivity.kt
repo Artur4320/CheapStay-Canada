@@ -48,6 +48,26 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private val canadianCitiesByRegion = mapOf(
+    "British Columbia" to listOf("Victoria", "Vancouver", "Prince George", "Kelowna", "Nanaimo", "Kamloops", "Abbotsford", "Chilliwack", "Duncan", "Courtenay", "Campbell River", "Penticton", "Vernon", "Cranbrook", "Fort St. John", "Terrace", "Whistler", "Squamish", "Richmond", "Surrey", "Burnaby", "Langford", "Sidney"),
+    "Alberta" to listOf("Calgary", "Edmonton", "Red Deer", "Lethbridge", "Medicine Hat", "Grande Prairie", "Fort McMurray", "Airdrie", "Banff", "Canmore"),
+    "Saskatchewan" to listOf("Saskatoon", "Regina", "Prince Albert", "Moose Jaw", "Swift Current", "Yorkton", "North Battleford"),
+    "Manitoba" to listOf("Winnipeg", "Brandon", "Steinbach", "Thompson", "Portage la Prairie", "Winkler", "Dauphin"),
+    "Ontario" to listOf("Toronto", "Ottawa", "Mississauga", "Hamilton", "London", "Windsor", "Kingston", "Sudbury", "Thunder Bay", "Barrie", "Niagara Falls", "Kitchener", "Waterloo"),
+    "Quebec" to listOf("Montreal", "Quebec City", "Laval", "Gatineau", "Sherbrooke", "Trois-Rivières", "Saguenay", "Rimouski"),
+    "New Brunswick" to listOf("Moncton", "Saint John", "Fredericton", "Dieppe", "Miramichi", "Bathurst"),
+    "Nova Scotia" to listOf("Halifax", "Sydney", "Dartmouth", "Truro", "New Glasgow", "Yarmouth"),
+    "Prince Edward Island" to listOf("Charlottetown", "Summerside", "Stratford", "Montague"),
+    "Newfoundland and Labrador" to listOf("St. John's", "Mount Pearl", "Corner Brook", "Gander", "Grand Falls-Windsor", "Happy Valley-Goose Bay"),
+    "Yukon" to listOf("Whitehorse", "Dawson City", "Watson Lake"),
+    "Northwest Territories" to listOf("Yellowknife", "Hay River", "Inuvik", "Fort Smith"),
+    "Nunavut" to listOf("Iqaluit", "Rankin Inlet", "Arviat", "Cambridge Bay")
+)
+private val allCanadianCities = canadianCitiesByRegion.values.flatten().distinct()
+
+private fun citiesForRegion(region: String): List<String> =
+    if (region == "ALL" || region.isBlank()) allCanadianCities else canadianCitiesByRegion[region].orEmpty()
+
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 private fun dateToMillis(date: String): Long? = try {
     LocalDate.parse(date, dateFormatter).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
@@ -134,42 +154,18 @@ fun EasyWayApp() {
     }
     var destination by remember { mutableStateOf("") }
     LaunchedEffect(origin, selectedRegion) {
-        originSuggestions = emptyList()
         val query = origin.trim()
-        if (query.length >= 2) {
-            delay(400)
-            originSuggestions = withContext(Dispatchers.IO) {
-                try {
-                    @Suppress("DEPRECATION")
-                    val results = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 8)
-                    results.orEmpty().filter { address ->
-                        address.countryCode.equals("CA", true) &&
-                            (selectedRegion == "ALL" || address.adminArea.equals(selectedRegion, true) ||
-                                (selectedRegion == "British Columbia" && address.adminArea.equals("BC", true)))
-                    }.mapNotNull { it.locality ?: it.subAdminArea }
-                        .distinctBy { it.lowercase(Locale.ROOT) }.take(5)
-                } catch (_: Exception) { emptyList() }
-            }
-        }
+        originSuggestions = citiesForRegion(selectedRegion)
+            .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
+            .filterNot { it.equals(query, ignoreCase = true) }
+            .take(7)
     }
     LaunchedEffect(destination, selectedRegion) {
-        destinationSuggestions = emptyList()
         val query = destination.trim()
-        if (query.length >= 2) {
-            delay(400)
-            destinationSuggestions = withContext(Dispatchers.IO) {
-                try {
-                    @Suppress("DEPRECATION")
-                    val results = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 8)
-                    results.orEmpty().filter { address ->
-                        address.countryCode.equals("CA", true) &&
-                            (selectedRegion == "ALL" || address.adminArea.equals(selectedRegion, true) ||
-                                (selectedRegion == "British Columbia" && address.adminArea.equals("BC", true)))
-                    }.mapNotNull { it.locality ?: it.subAdminArea }
-                        .distinctBy { it.lowercase(Locale.ROOT) }.take(5)
-                } catch (_: Exception) { emptyList() }
-            }
-        }
+        destinationSuggestions = citiesForRegion(selectedRegion)
+            .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
+            .filterNot { it.equals(query, ignoreCase = true) }
+            .take(7)
     }
     var currentPage by remember { mutableIntStateOf(0) }
     var travelDate by remember { mutableStateOf("") }
@@ -235,6 +231,9 @@ fun EasyWayApp() {
                                 label = { Text(if (french) "Ville de départ" else "Starting city") },
                                 placeholder = { Text(if (french) "e.g. Victoria, BC" else "e.g. Victoria, BC") },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            Text(if (french) "Villes de la région" else "Cities in selected region",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                             originSuggestions.forEach { suggestion ->
                                 TextButton(onClick = { origin = suggestion; originSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
                                     Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
@@ -253,6 +252,9 @@ fun EasyWayApp() {
                                 label = { Text(if (french) "Ville de destination" else "Destination city") },
                                 placeholder = { Text(if (french) "e.g. Kelowna, BC" else "e.g. Kelowna, BC") },
                                 modifier = Modifier.fillMaxWidth(), singleLine = true)
+                            Text(if (french) "Villes de la région" else "Cities in selected region",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                             destinationSuggestions.forEach { suggestion ->
                                 TextButton(onClick = { destination = suggestion; destinationSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
                                     Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
