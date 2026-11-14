@@ -65,8 +65,31 @@ private val canadianCitiesByRegion = mapOf(
 )
 private val allCanadianCities = canadianCitiesByRegion.values.flatten().distinct()
 
+// Initial British Columbia destination catalogue: settlements with a practical
+// passenger-transport connection (scheduled bus, passenger rail, air service,
+// or passenger ferry). Seasonal links are included for later date-aware filtering.
+private val bcTransportCities = listOf(
+    "Abbotsford", "Alert Bay", "Bella Bella", "Bella Coola", "Bowen Island",
+    "Burnaby", "Campbell River", "Castlegar", "Chemainus", "Chilliwack",
+    "Comox", "Courtenay", "Crofton", "Daajing Giids", "Dawson Creek",
+    "Denman Island", "Duncan", "Fernie", "Fort St. John", "Galiano Island",
+    "Gibsons", "Golden", "Hope", "Kamloops", "Kelowna", "Langford",
+    "Ladysmith", "Mayne Island", "Masset", "McBride", "Nanaimo",
+    "Nelson", "Parksville", "Pemberton", "Penticton", "Pender Island",
+    "Pitt Meadows", "Port Alberni", "Port Hardy", "Port McNeill",
+    "Powell River", "Prince George", "Prince Rupert", "Quesnel",
+    "Revelstoke", "Richmond", "Salmon Arm", "Saturna Island", "Sechelt",
+    "Sidney", "Smithers", "Sooke", "Squamish", "Stewart", "Summerland",
+    "Terrace", "Tofino", "Ucluelet", "Vancouver", "Vanderhoof",
+    "Valemount", "Vernon", "Victoria", "Whistler", "Williams Lake"
+)
+
 private fun citiesForRegion(region: String): List<String> =
-    if (region == "ALL" || region.isBlank()) allCanadianCities else canadianCitiesByRegion[region].orEmpty()
+    when {
+        region == "ALL" || region.isBlank() -> allCanadianCities
+        region == "British Columbia" -> bcTransportCities
+        else -> canadianCitiesByRegion[region].orEmpty()
+    }
 
 // Choose a recognizable nearby city instead of filling the field with a street address.
 private fun nearbyKnownCity(location: android.location.Location, region: String): String? {
