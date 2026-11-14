@@ -153,6 +153,9 @@ fun EasyWayApp() {
         }
     }
     var destination by remember { mutableStateOf("") }
+    var destinationRegion by remember { mutableStateOf(selectedRegion) }
+    var travelOutsideRegion by remember { mutableStateOf(false) }
+    val regionOptions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
     LaunchedEffect(origin, selectedRegion) {
         val query = origin.trim()
         originSuggestions = citiesForRegion(selectedRegion)
@@ -160,9 +163,9 @@ fun EasyWayApp() {
             .filterNot { it.equals(query, ignoreCase = true) }
             .take(7)
     }
-    LaunchedEffect(destination, selectedRegion) {
+    LaunchedEffect(destination, destinationRegion) {
         val query = destination.trim()
-        destinationSuggestions = citiesForRegion(selectedRegion)
+        destinationSuggestions = citiesForRegion(destinationRegion)
             .filter { query.isBlank() || it.contains(query, ignoreCase = true) }
             .filterNot { it.equals(query, ignoreCase = true) }
             .take(7)
@@ -220,107 +223,101 @@ fun EasyWayApp() {
                     )
                 }
                 if (currentPage == 0) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
-                            OutlinedTextField(value = origin, onValueChange = { origin = it; cityValidationMessage = "" },
-                                label = { Text(if (french) "Ville de départ" else "Starting city") },
-                                placeholder = { Text(if (french) "e.g. Victoria, BC" else "e.g. Victoria, BC") },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true)
-                            Text(if (french) "Villes de la région" else "Cities in selected region",
-                                style = MaterialTheme.typography.labelMedium,
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.94f))) {
+                        Column(Modifier.padding(horizontal = 22.dp, vertical = 24.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text(if (french) "Où voyagez-vous ?" else "Where are you travelling?",
+                                style = MaterialTheme.typography.headlineSmall)
+                            Text(if (french) "Choisissez votre destination" else "Choose your trip area",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            originSuggestions.forEach { suggestion ->
-                                TextButton(onClick = { origin = suggestion; originSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                            Card(Modifier.fillMaxWidth().clickable {
+                                travelOutsideRegion = false
+                                destinationRegion = selectedRegion
+                            }, shape = RoundedCornerShape(18.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    if (!travelOutsideRegion) 2.dp else 1.dp,
+                                    if (!travelOutsideRegion) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+                                colors = CardDefaults.cardColors(containerColor =
+                                    if (!travelOutsideRegion) Color(0xFFEAF2FF) else Color.White)) {
+                                Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    Text("🏞️", style = MaterialTheme.typography.headlineMedium)
+                                    Column(Modifier.weight(1f).padding(start = 14.dp)) {
+                                        Text(if (french) "Rester en $selectedRegion" else "Stay in $selectedRegion",
+                                            style = MaterialTheme.typography.titleMedium)
+                                        Text(if (french) "Voyager dans la région choisie" else "Travel within your selected region",
+                                            style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    RadioButton(selected = !travelOutsideRegion, onClick = {
+                                        travelOutsideRegion = false
+                                        destinationRegion = selectedRegion
+                                    })
                                 }
                             }
-                            OutlinedButton(onClick = {
-                                val fineGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                val coarseGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                if (fineGranted || coarseGranted) fetchCurrentLocation()
-                                else locationPermission.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
-                            }, modifier = Modifier.fillMaxWidth()) {
-                                Text(if (french) "Utiliser ma position" else "Use my location")
-                            }
-                            if (locationMessage.isNotBlank()) Text(locationMessage, style = MaterialTheme.typography.bodySmall)
-                            OutlinedTextField(value = destination, onValueChange = { destination = it; cityValidationMessage = "" },
-                                label = { Text(if (french) "Ville de destination" else "Destination city") },
-                                placeholder = { Text(if (french) "e.g. Kelowna, BC" else "e.g. Kelowna, BC") },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true)
-                            Text(if (french) "Villes de la région" else "Cities in selected region",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            destinationSuggestions.forEach { suggestion ->
-                                TextButton(onClick = { destination = suggestion; destinationSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                            Card(Modifier.fillMaxWidth().clickable { travelOutsideRegion = true },
+                                shape = RoundedCornerShape(18.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    if (travelOutsideRegion) 2.dp else 1.dp,
+                                    if (travelOutsideRegion) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+                                colors = CardDefaults.cardColors(containerColor =
+                                    if (travelOutsideRegion) Color(0xFFEAF2FF) else Color.White)) {
+                                Row(Modifier.padding(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    Text("🗺️", style = MaterialTheme.typography.headlineMedium)
+                                    Column(Modifier.weight(1f).padding(start = 14.dp)) {
+                                        Text(if (french) "Voyager dans une autre province" else "Travel to another province",
+                                            style = MaterialTheme.typography.titleMedium)
+                                        Text(if (french) "Choisir une province ou un territoire" else "Choose another province or territory",
+                                            style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    RadioButton(selected = travelOutsideRegion, onClick = { travelOutsideRegion = true })
                                 }
                             }
-                            OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                                Text(if (travelDate.isBlank()) { if (french) "Date de départ · Choisir" else "When · Choose departure date" } else { if (french) "Départ · $travelDate" else "Departure · $travelDate" })
+                            Button(onClick = {
+                                if (travelOutsideRegion || selectedRegion == "ALL") currentPage = 1
+                                else { destinationRegion = selectedRegion; currentPage = 2 }
+                            }, modifier = Modifier.fillMaxWidth().height(54.dp),
+                                shape = RoundedCornerShape(16.dp)) {
+                                Text(if (french) "Continuer  →" else "Continue  →",
+                                    style = MaterialTheme.typography.titleMedium)
                             }
                         }
                     }
-                    Button(
-                        onClick = {
-                            cityValidationMessage = ""
-                            isValidatingCities = true
-                            val fromText = origin.trim()
-                            val toText = destination.trim()
-                            val regionAtSearch = selectedRegion
-                            Executors.newSingleThreadExecutor().execute {
-                                fun findCanadianCity(query: String): android.location.Address? {
-                                    return try {
-                                        @Suppress("DEPRECATION")
-                                        val matches = Geocoder(context, Locale.CANADA).getFromLocationName("$query, Canada", 5)
-                                        val wanted = query.substringBefore(",").trim().lowercase(Locale.ROOT)
-                                        matches?.firstOrNull { address ->
-                                            val countryOk = address.countryCode.equals("CA", ignoreCase = true)
-                                            val provinceOk = regionAtSearch == "ALL" ||
-                                                address.adminArea.equals(regionAtSearch, ignoreCase = true) ||
-                                                (regionAtSearch == "British Columbia" && address.adminArea.equals("BC", ignoreCase = true))
-                                            val names = listOfNotNull(address.locality, address.subAdminArea, address.featureName)
-                                                .map { it.substringBefore(",").trim().lowercase(Locale.ROOT) }
-                                            countryOk && provinceOk && names.any { it == wanted }
-                                        }
-                                    } catch (_: Exception) { null }
+                } else if (currentPage == 1) {
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f))) {
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(if (french) "Choisir la province de destination" else "Choose destination province",
+                                style = MaterialTheme.typography.headlineSmall)
+                            Text(if (french) "Sélectionnez votre destination" else "Select where you want to go",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            regionOptions.filter { it != selectedRegion }.forEach { region ->
+                                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                                    .clickable { destinationRegion = region; currentPage = 2 }
+                                    .padding(horizontal = 10.dp, vertical = 9.dp),
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    Text("🇨🇦", style = MaterialTheme.typography.titleLarge)
+                                    Text(if (french) when (region) {
+                                        "British Columbia" -> "Colombie-Britannique"
+                                        "Quebec" -> "Québec"
+                                        "New Brunswick" -> "Nouveau-Brunswick"
+                                        "Nova Scotia" -> "Nouvelle-Écosse"
+                                        "Prince Edward Island" -> "Île-du-Prince-Édouard"
+                                        "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
+                                        "Northwest Territories" -> "Territoires du Nord-Ouest"
+                                        else -> region
+                                    } else region, modifier = Modifier.weight(1f).padding(start = 12.dp),
+                                        style = MaterialTheme.typography.titleMedium)
+                                    RadioButton(selected = destinationRegion == region, onClick = {
+                                        destinationRegion = region
+                                        currentPage = 2
+                                    })
                                 }
-                                val fromCity = findCanadianCity(fromText)
-                                val toCity = findCanadianCity(toText)
-                                Handler(Looper.getMainLooper()).post {
-                                    isValidatingCities = false
-                                    when {
-                                        fromCity == null && toCity == null ->
-                                            cityValidationMessage = if (french) "Aucune des deux villes n’a été trouvée dans la région choisie. Vérifiez les noms." else "Neither city was found in the selected region. Check the names."
-                                        fromCity == null ->
-                                            cityValidationMessage = if (french) "Ville de départ introuvable dans la région choisie." else "Starting city not found in the selected region."
-                                        toCity == null ->
-                                            cityValidationMessage = if (french) "Ville de destination introuvable dans la région choisie." else "Destination city not found in the selected region."
-                                        fromCity.locality.equals(toCity.locality, ignoreCase = true) &&
-                                            fromCity.adminArea.equals(toCity.adminArea, ignoreCase = true) ->
-                                            cityValidationMessage = if (french) "Choisissez deux villes différentes." else "Please choose two different cities."
-                                        else -> {
-                                            origin = fromCity.locality ?: fromText
-                                            destination = toCity.locality ?: toText
-                                            currentPage = 1
-                                        }
-                                    }
-                                }
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isValidatingCities && origin.isNotBlank() && destination.isNotBlank() &&
-                            origin.trim() != destination.trim() && travelDate.isNotBlank()
-                    ) { Text(if (isValidatingCities) { if (french) "Vérification…" else "Checking…" } else { if (french) "Continuer" else "Continue" }) }
-                    if (cityValidationMessage.isNotBlank()) {
-                        Text(cityValidationMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                            TextButton(onClick = { currentPage = 2 }) { Text(if (french) "Retour" else "Back") }
+                        }
                     }
-                } else {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                } else if (currentPage == 2) {                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text(if (french) "Options de voyage" else "Travel options", style = MaterialTheme.typography.titleLarge)
                         TextButton(onClick = { currentPage = 0 }) { Text(if (french) "Retour" else "Back") }
@@ -328,7 +325,7 @@ fun EasyWayApp() {
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(if (french) "Votre trajet" else "Your trip", style = MaterialTheme.typography.titleMedium)
-                            Text("$origin → $destination")
+                            Text("$origin, $selectedRegion → $destination, $destinationRegion")
                             Text(if (french) "Départ : $travelDate" else "Departure: $travelDate",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             HorizontalDivider()
