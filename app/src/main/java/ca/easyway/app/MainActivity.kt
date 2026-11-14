@@ -17,6 +17,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.Instant
 import java.util.concurrent.Executors
 import android.os.Handler
@@ -462,7 +464,8 @@ private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Canvas(Modifier.size(width = 25.dp, height = 17.dp)) {
+        Box(Modifier.size(width = 25.dp, height = 17.dp)) {
+        Canvas(Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
             if (french) {
@@ -548,8 +551,16 @@ private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
         }
         Text(
             language,
-            color = Color(0xFF176B5B),
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            modifier = Modifier.align(androidx.compose.ui.Alignment.Center)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color.Black.copy(alpha = 0.58f))
+                .padding(horizontal = 2.dp, vertical = 0.dp),
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 8.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold
+            )
         )
+        }
     }
 }
