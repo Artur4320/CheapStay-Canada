@@ -226,11 +226,13 @@ fun EasyWayApp() {
     LaunchedEffect(origin, selectedRegion) {
         val query = origin.trim()
         val priorityCities = if (selectedRegion == "British Columbia") listOf("Vancouver", "Victoria") else emptyList()
-        originSuggestions = (priorityCities + citiesForRegion(selectedRegion))
+        val remainingCities = citiesForRegion(selectedRegion)
             .distinct()
+            .filterNot { city -> priorityCities.any { it.equals(city, ignoreCase = true) } }
+            .sortedBy { it.lowercase(Locale.ROOT) }
+        originSuggestions = (priorityCities + remainingCities)
             .filter { query.isBlank() || it.startsWith(query, ignoreCase = true) }
             .filterNot { it.equals(query, ignoreCase = true) }
-            .take(10)
     }
     LaunchedEffect(destination, destinationRegion) {
         val query = destination.trim()
