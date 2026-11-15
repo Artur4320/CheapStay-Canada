@@ -434,22 +434,36 @@ fun EasyWayApp() {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
                             Box(Modifier.fillMaxWidth()) {
-                                OutlinedTextField(
-                                    value = origin,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text(if (french) "Ville de départ" else "Starting city") },
-                                    placeholder = { Text(if (french) "Choisir une ville" else "Select a city") },
-                                    modifier = Modifier.fillMaxWidth().clickable { showOriginSuggestions = true },
-                                    singleLine = true,
-                                    trailingIcon = {
-                                        Text("▾", modifier = Modifier.clickable { showOriginSuggestions = !showOriginSuggestions }.padding(8.dp))
+                                OutlinedButton(
+                                    onClick = { showOriginSuggestions = true },
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(4.dp),
+                                    contentPadding = PaddingValues(horizontal = 16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                    ) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                            Text(
+                                                if (french) "Ville de départ" else "Starting city",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            Text(
+                                                origin.ifBlank { if (french) "Choisir une ville" else "Select a city" },
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = if (origin.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                        Text("▾", style = MaterialTheme.typography.titleMedium)
                                     }
-                                )
+                                }
                                 DropdownMenu(
                                     expanded = showOriginSuggestions,
                                     onDismissRequest = { showOriginSuggestions = false },
-                                    modifier = Modifier.fillMaxWidth(0.82f).heightIn(max = 320.dp)
+                                    modifier = Modifier.heightIn(max = 360.dp)
                                 ) {
                                     originSuggestions.forEach { suggestion ->
                                         DropdownMenuItem(
