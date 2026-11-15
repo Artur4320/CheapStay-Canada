@@ -24,6 +24,17 @@ internal class VictoriaGtfsRepository(context: Context) {
         const val SOURCE_NAME = "BC Transit"
         private const val DB_NAME = "victoria_gtfs.db"
         private const val DB_VERSION = 1
+        private val TABLES = mapOf("agency.txt" to "agency", "routes.txt" to "routes", "stops.txt" to "stops", "trips.txt" to "trips", "calendar_dates.txt" to "calendar_dates", "stop_times.txt" to "stop_times", "shapes.txt" to "shapes", "feed_info.txt" to "feed_info")
+        private val COLUMNS = mapOf(
+            "agency" to listOf("agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone", "agency_fare_url", "agency_email"),
+            "routes" to listOf("route_id", "route_short_name", "route_long_name", "route_type", "route_color", "route_text_color"),
+            "stops" to listOf("stop_id", "stop_name", "stop_lat", "stop_lon", "wheelchair_boarding", "stop_code"),
+            "trips" to listOf("route_id", "service_id", "trip_id", "trip_headsign", "shape_id", "block_id", "direction_id"),
+            "calendar_dates" to listOf("service_id", "date", "exception_type"),
+            "stop_times" to listOf("trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence", "shape_dist_traveled", "stop_headsign", "pickup_type", "drop_off_type", "timepoint"),
+            "shapes" to listOf("shape_id", "shape_pt_lat", "shape_pt_lon", "shape_pt_sequence", "shape_dist_traveled"),
+            "feed_info" to listOf("feed_publisher_name", "feed_publisher_url", "feed_lang", "feed_version", "feed_start_date", "feed_end_date")
+        )
     }
 
     private val helper = GtfsDbHelper(context.applicationContext)
@@ -56,9 +67,8 @@ internal class VictoriaGtfsRepository(context: Context) {
                             while (true) {
                                 val entry = zip.nextEntry ?: break
                                 val table = TABLES[entry.name] ?: continue
-                                BufferedReader(InputStreamReader(zip, Charsets.UTF_8)).use { reader ->
-                                    importCsv(db, table, reader)
-                                }
+                                val reader = BufferedReader(InputStreamReader(zip, Charsets.UTF_8))
+                                importCsv(db, table, reader)
                                 zip.closeEntry()
                             }
                             createIndexes(db)
@@ -141,8 +151,8 @@ internal class VictoriaGtfsRepository(context: Context) {
         val columns = COLUMNS[table] ?: return
         val indexes = columns.map { header.indexOf(it) }
         if (indexes.any { it < 0 }) return
-        var count = 0
-        reader.forEachLine { line ->
+        while (true) {
+            val line = reader.readLine() ?: break
             val fields = parseCsvLine(line)
             val values = ContentValues(columns.size)
             columns.forEachIndexed { index, column ->
@@ -158,8 +168,6 @@ internal class VictoriaGtfsRepository(context: Context) {
                 }
             }
             db.insertOrThrow(table, null, values)
-            count++
-            if (count % 10_000 == 0) Unit
         }
     }
 
@@ -220,22 +228,4 @@ internal class VictoriaGtfsRepository(context: Context) {
         }
     }
 
-    private companion object CsvSchema {
-        val TABLES = mapOf(
-            "agency.txt" to "agency", "routes.txt" to "routes", "stops.txt" to "stops",
-            "trips.txt" to "trips", "calendar_dates.txt" to "calendar_dates",
-            "stop_times.txt" to "stop_times", "shapes.txt" to "shapes",
-            "feed_info.txt" to "feed_info"
-        )
-        val COLUMNS = mapOf(
-            "agency" to listOf("agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang", "agency_phone", "agency_fare_url", "agency_email"),
-            "routes" to listOf("route_id", "route_short_name", "route_long_name", "route_type", "route_color", "route_text_color"),
-            "stops" to listOf("stop_id", "stop_name", "stop_lat", "stop_lon", "wheelchair_boarding", "stop_code"),
-            "trips" to listOf("route_id", "service_id", "trip_id", "trip_headsign", "shape_id", "block_id", "direction_id"),
-            "calendar_dates" to listOf("service_id", "date", "exception_type"),
-            "stop_times" to listOf("trip_id", "arrival_time", "departure_time", "stop_id", "stop_sequence", "shape_dist_traveled", "stop_headsign", "pickup_type", "drop_off_type", "timepoint"),
-            "shapes" to listOf("shape_id", "shape_pt_lat", "shape_pt_lon", "shape_pt_sequence", "shape_dist_traveled"),
-            "feed_info" to listOf("feed_publisher_name", "feed_publisher_url", "feed_lang", "feed_version", "feed_start_date", "feed_end_date")
-        )
-    }
 }
