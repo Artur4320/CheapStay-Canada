@@ -141,13 +141,47 @@ internal class VictoriaGtfsRepository(context: Context) {
             rows
         }
 
+
+    data class NearbyStop(val id: String, val name: String, val latitude: Double, val longitude: Double, val distanceMetres: Int)
+
+    suspend fun searchStopsNear(latitude: Double, longitude: Double, limit: Int = 12): List<NearbyStop> =
+        withContext(Dispatchers.IO) {
+            val deltaLat = 0.04
+            val deltaLon = 0.06
+            val db = helper.readableDatabase
+            val rows = mutableListOf<NearbyStop>()
+            db.rawQuery(
+                "SELECT stop_id, stop_name, stop_lat, stop_lon FROM stops WHERE stop_lat BETWEEN ? AND ? AND stop_lon BETWEEN ? AND ?",
+                arrayOf((latitude - deltaLat).toString(), (latitude + deltaLat).toString(),
+                    (longitude - deltaLon).toString(), (longitude + deltaLon).toString())
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val lat = cursor.getDouble(2)
+                    val lon = cursor.getDouble(3)
+                    val distance = haversineMetres(latitude, longitude, lat, lon)
+                    rows += NearbyStop(cursor.getString(0), cursor.getString(1), lat, lon, distance)
+                }
+            }
+            rows.sortedBy { it.distanceMetres }.take(limit.coerceIn(1, 50))
+        }
+
+    private fun haversineMetres(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Int {
+        val earthRadius = 6_371_000.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
+            kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
+            kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
+        return (2 * earthRadius * kotlin.math.asin(kotlin.math.sqrt(a))).toInt()
+    }
+
     private fun clearTables(db: SQLiteDatabase) {
         listOf("agency", "routes", "stops", "trips", "calendar_dates", "stop_times", "shapes", "feed_info")
             .forEach { db.delete(it, null, null) }
     }
 
     private fun importCsv(db: SQLiteDatabase, table: String, reader: BufferedReader) {
-        val header = reader.readLine()?.let(::parseCsvLine) ?: return
+        val header = reader.readLine()?.removePrefix("\uFEFF")?.let(::parseCsvLine) ?: return
         val columns = COLUMNS[table] ?: return
         val indexes = columns.map { header.indexOf(it) }
         if (indexes.any { it < 0 }) return
