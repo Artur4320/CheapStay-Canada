@@ -220,6 +220,16 @@ fun EasyWayApp() {
             locationMessage = if (french) "Autorisation refusée. Saisissez votre ville manuellement." else "Permission denied. Enter your city manually."
         }
     }
+    // If location permission was granted earlier, prefill the starting city when a region is selected.
+    // Never request permission automatically and never overwrite a city the user entered manually.
+    LaunchedEffect(selectedRegion) {
+        val hasLocationPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (selectedRegion.isNotBlank() && origin.isBlank() && hasLocationPermission) {
+            fetchCurrentLocation()
+        }
+    }
     var destination by remember { mutableStateOf("") }
     var destinationRegion by remember { mutableStateOf(selectedRegion) }
     var travelOutsideRegion by remember { mutableStateOf(false) }
