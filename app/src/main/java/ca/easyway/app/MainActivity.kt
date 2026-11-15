@@ -611,13 +611,25 @@ fun EasyWayApp() {
                         Text(if (french) "Comparer les itinéraires" else "Compare routes")
                     }
                     if (showSearchInfo) {
-                        Card(Modifier.fillMaxWidth()) {
-                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(if (french) "Les détails de votre voyage sont prêts" else "Your trip details are ready", style = MaterialTheme.typography.titleMedium)
-                                Text(if (french) "Les horaires, tarifs et résultats de transport en direct ne sont pas encore connectés. Ils seront ajoutés à la prochaine étape du développement." else "Live transport schedules, fares and route results are not connected yet. They will be added in the next development stage.")
-                                Text(if (french) "Aucun prix ni aucune disponibilité ne sont estimés ou présentés comme confirmés." else "No prices or availability are being estimated or shown as confirmed.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if ("Bus" in selectedTransport &&
+                            selectedRegion == "British Columbia" &&
+                            destinationRegion == "British Columbia"
+                        ) {
+                            VictoriaTransitSearchCard(
+                                origin = origin,
+                                destination = destination,
+                                travelDate = travelDate,
+                                french = french
+                            )
+                        } else {
+                            Card(Modifier.fillMaxWidth()) {
+                                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(if (french) "Recherche de transport" else "Transport search", style = MaterialTheme.typography.titleMedium)
+                                    Text(if (french) "Les horaires d’autobus Victoria sont disponibles pour les trajets locaux en Colombie-Britannique. D’autres réseaux seront ajoutés progressivement." else "Victoria bus schedules are available for local trips within British Columbia. Other transport networks will be added progressively.")
+                                    Text(if (french) "Aucun prix ni aucune disponibilité ne sont inventés." else "No prices or availability are invented.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
                         }
                     }
