@@ -429,9 +429,9 @@ fun EasyWayApp() {
                     }
                 } else if (currentPage == 2) {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().graphicsLayer(scaleX = 0.70f, scaleY = 0.70f),
                         shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.88f))
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f))
                     ) {
                         Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Text(if (french) "Planifiez votre trajet" else "Plan your trip", style = MaterialTheme.typography.titleLarge)
