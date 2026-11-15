@@ -13,7 +13,8 @@ internal data class BcTransitSystemFeed(
     val realtimeServiceAlerts: Boolean,
     val realtimeTripUpdates: Boolean,
     val realtimeVehiclePositions: Boolean,
-    val dataPortalUrl: String = "https://www.bctransit.com/open-data/"
+    val dataPortalUrl: String = "https://www.bctransit.com/open-data/",
+    val note: String = ""
 )
 
 internal object BcTransitOpenDataDirectory {
