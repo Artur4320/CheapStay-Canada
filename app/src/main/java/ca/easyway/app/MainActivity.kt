@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import java.time.Instant
 import java.util.concurrent.Executors
 import android.os.Handler
@@ -741,53 +742,26 @@ fun EasyWayApp() {
         }
     }
     if (showRegionDialog) {
-        val regions = listOf(
-            "British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec",
-            "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador",
-            "Yukon", "Northwest Territories", "Nunavut"
-        )
-        AlertDialog(
-            onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false },
-            title = { Text(if (french) "Où vous trouvez-vous actuellement ?" else "Where are you located now?") },
-            text = {
-                Column(
-                    Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(if (french) "Choisissez votre province ou territoire actuel" else "Choose your current province or territory",
-                        style = MaterialTheme.typography.bodyMedium)
-                    regions.forEach { region ->
-                        OutlinedButton(
-                            onClick = {
-                                selectedRegion = region
-                                preferences.edit().putString("travel_region", selectedRegion).apply()
-                                showRegionDialog = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(if (french) when (region) {
-                                "British Columbia" -> "Colombie-Britannique"
-                                "Quebec" -> "Québec"
-                                "New Brunswick" -> "Nouveau-Brunswick"
-                                "Nova Scotia" -> "Nouvelle-Écosse"
-                                "Prince Edward Island" -> "Île-du-Prince-Édouard"
-                                "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
-                                "Northwest Territories" -> "Territoires du Nord-Ouest"
-                                else -> region
-                            } else region)
+        val regions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
+        Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 560.dp, max = 640.dp)) {
+                CanadaDialogArtwork(Modifier.matchParentSize())
+                Column(Modifier.fillMaxSize().padding(start = 52.dp, end = 52.dp, top = 78.dp, bottom = 42.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text(if (french) "Où vous trouvez-vous actuellement ?" else "Where are you located now?", color = Color(0xFF14263D), style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Text(if (french) "Choisissez votre province ou territoire actuel" else "Choose your current province or territory", color = Color(0xFF58616B), style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(12.dp))
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(5.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        regions.forEach { region ->
+                            OutlinedButton(onClick = { selectedRegion = region; preferences.edit().putString("travel_region", selectedRegion).apply(); showRegionDialog = false }, modifier = Modifier.fillMaxWidth().heightIn(min = 32.dp), contentPadding = PaddingValues(horizontal = 5.dp, vertical = 3.dp), shape = RoundedCornerShape(22.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF14263D)), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF8796A5))) {
+                                Text(if (french) when (region) { "British Columbia" -> "Colombie-Britannique"; "Quebec" -> "Québec"; "New Brunswick" -> "Nouveau-Brunswick"; "Nova Scotia" -> "Nouvelle-Écosse"; "Prince Edward Island" -> "Île-du-Prince-Édouard"; "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"; "Northwest Territories" -> "Territoires du Nord-Ouest"; else -> region } else region, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                            }
                         }
                     }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                if (selectedRegion.isNotBlank()) {
-                    TextButton(onClick = { showRegionDialog = false }) {
-                        Text(if (french) "Fermer" else "Close")
-                    }
+                    if (selectedRegion.isNotBlank()) TextButton(onClick = { showRegionDialog = false }) { Text(if (french) "Fermer" else "Close", color = Color(0xFF14263D)) }
                 }
             }
-        )
+        }
     }
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(travelDate))
@@ -802,6 +776,37 @@ fun EasyWayApp() {
     }
 }
 
+
+
+@Composable
+private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val navy = Color(0xFF14263D); val red = Color(0xFFB3262D); val gold = Color(0xFFC49A54); val blue = Color(0xFF315B78)
+        drawRoundRect(Color(0xFFFFFCF5), cornerRadius = androidx.compose.ui.geometry.CornerRadius(28.dp.toPx()))
+        drawRoundRect(navy, cornerRadius = androidx.compose.ui.geometry.CornerRadius(28.dp.toPx()), style = androidx.compose.ui.graphics.drawscope.Stroke(5.dp.toPx()))
+        drawRoundRect(red, topLeft = Offset(7.dp.toPx(), 7.dp.toPx()), size = androidx.compose.ui.geometry.Size(size.width - 14.dp.toPx(), size.height - 14.dp.toPx()), cornerRadius = androidx.compose.ui.geometry.CornerRadius(24.dp.toPx()), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
+        val cx = size.width / 2f
+        val leaf = androidx.compose.ui.graphics.Path().apply {
+            moveTo(cx, 18.dp.toPx()); lineTo(cx - 7.dp.toPx(), 30.dp.toPx()); lineTo(cx - 17.dp.toPx(), 26.dp.toPx()); lineTo(cx - 13.dp.toPx(), 38.dp.toPx()); lineTo(cx - 23.dp.toPx(), 43.dp.toPx()); lineTo(cx - 9.dp.toPx(), 47.dp.toPx()); lineTo(cx - 8.dp.toPx(), 57.dp.toPx()); lineTo(cx, 52.dp.toPx()); lineTo(cx + 8.dp.toPx(), 57.dp.toPx()); lineTo(cx + 9.dp.toPx(), 47.dp.toPx()); lineTo(cx + 23.dp.toPx(), 43.dp.toPx()); lineTo(cx + 13.dp.toPx(), 38.dp.toPx()); lineTo(cx + 17.dp.toPx(), 26.dp.toPx()); lineTo(cx + 7.dp.toPx(), 30.dp.toPx()); close()
+        }
+        drawPath(leaf, red)
+        val peaks = androidx.compose.ui.graphics.Path().apply { moveTo(22.dp.toPx(), 78.dp.toPx()); lineTo(70.dp.toPx(), 43.dp.toPx()); lineTo(100.dp.toPx(), 78.dp.toPx()); lineTo(138.dp.toPx(), 48.dp.toPx()); lineTo(170.dp.toPx(), 78.dp.toPx()); lineTo(size.width - 22.dp.toPx(), 78.dp.toPx()) }
+        drawPath(peaks, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
+        drawLine(gold, Offset(22.dp.toPx(), 83.dp.toPx()), Offset(size.width - 22.dp.toPx(), 83.dp.toPx()), 2.dp.toPx())
+        for (x in listOf(24f, 39f, 54f, size.width / 4f, size.width - size.width / 4f, size.width - 54f, size.width - 39f, size.width - 24f)) {
+            val xx = x.dp.toPx(); val top = 105.dp.toPx(); val base = 150.dp.toPx()
+            drawLine(navy, Offset(xx, base), Offset(xx, top), 2.dp.toPx())
+            for (i in 0..2) { val y = top + i * 11.dp.toPx(); val half = (8 - i).dp.toPx(); val p = androidx.compose.ui.graphics.Path().apply { moveTo(xx - half, y + 10.dp.toPx()); lineTo(xx, y); lineTo(xx + half, y + 10.dp.toPx()) }; drawPath(p, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx())) }
+        }
+        listOf(Offset(24.dp.toPx(), size.height * .44f), Offset(size.width - 24.dp.toPx(), size.height * .44f)).forEach { drawCircle(gold, 5.dp.toPx(), it); drawCircle(red, 2.dp.toPx(), it) }
+        val by = size.height - 25.dp.toPx()
+        drawLine(blue, Offset(25.dp.toPx(), by), Offset(size.width - 25.dp.toPx(), by), 2.dp.toPx())
+        drawLine(navy, Offset(cx, by - 17.dp.toPx()), Offset(cx, by + 12.dp.toPx()), 2.dp.toPx())
+        drawLine(navy, Offset(cx - 13.dp.toPx(), by), Offset(cx + 13.dp.toPx(), by), 2.dp.toPx())
+        drawCircle(gold, 15.dp.toPx(), Offset(cx, by), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
+        for (i in 0..2) { val y = by + (i - 1) * 5.dp.toPx(); drawLine(blue, Offset(25.dp.toPx(), y), Offset(size.width * .34f, y + 2.dp.toPx()), 1.dp.toPx()); drawLine(blue, Offset(size.width * .66f, y + 2.dp.toPx()), Offset(size.width - 25.dp.toPx(), y), 1.dp.toPx()) }
+    }
+}
 
 @Composable
 private fun ProvinceFlag(region: String) {
