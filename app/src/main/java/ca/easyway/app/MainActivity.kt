@@ -342,10 +342,14 @@ fun EasyWayApp() {
                         shape = RoundedCornerShape(28.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.76f))
                     ) {
-                        Column(
-                            Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
+                        Box(Modifier.fillMaxWidth()) {
+                            if (selectedRegion == "British Columbia") {
+                                BritishColumbiaCardArtwork(Modifier.matchParentSize())
+                            }
+                            Column(
+                                Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
                             Text(
                                 if (french) "Où voyagez-vous ?" else "Where are you travelling?",
                                 style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
@@ -427,6 +431,7 @@ fun EasyWayApp() {
                                     if (french) "Continuer  →" else "Continue  →",
                                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
                                 )
+                            }
                             }
                         }
                     }
@@ -805,6 +810,46 @@ private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
         drawLine(navy, Offset(cx - 13.dp.toPx(), by), Offset(cx + 13.dp.toPx(), by), 2.dp.toPx())
         drawCircle(gold, 15.dp.toPx(), Offset(cx, by), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
         for (i in 0..2) { val y = by + (i - 1) * 5.dp.toPx(); drawLine(blue, Offset(25.dp.toPx(), y), Offset(size.width * .34f, y + 2.dp.toPx()), 1.dp.toPx()); drawLine(blue, Offset(size.width * .66f, y + 2.dp.toPx()), Offset(size.width - 25.dp.toPx(), y), 1.dp.toPx()) }
+    }
+}
+
+@Composable
+private fun BritishColumbiaCardArtwork(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val navy = Color(0xFF12384A).copy(alpha = 0.42f)
+        val teal = Color(0xFF159B91).copy(alpha = 0.48f)
+        val gold = Color(0xFFC58A32).copy(alpha = 0.55f)
+        val sideInset = 13.dp.toPx()
+        val stroke = 2.dp.toPx()
+
+        // Delicate coastal-inspired flowing forms stay close to the card edges.
+        // The central content area remains clear and fully readable.
+        for (side in 0..1) {
+            val x = if (side == 0) sideInset else size.width - sideInset
+            val direction = if (side == 0) 1f else -1f
+            val wave = androidx.compose.ui.graphics.Path().apply {
+                moveTo(x, size.height * 0.16f)
+                cubicTo(x + direction * 7.dp.toPx(), size.height * 0.22f,
+                    x - direction * 5.dp.toPx(), size.height * 0.29f, x, size.height * 0.35f)
+                cubicTo(x + direction * 6.dp.toPx(), size.height * 0.42f,
+                    x - direction * 5.dp.toPx(), size.height * 0.49f, x, size.height * 0.56f)
+                cubicTo(x + direction * 7.dp.toPx(), size.height * 0.64f,
+                    x - direction * 4.dp.toPx(), size.height * 0.72f, x, size.height * 0.80f)
+            }
+            drawPath(wave, teal, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+            val innerWave = androidx.compose.ui.graphics.Path().apply {
+                moveTo(x - direction * 3.dp.toPx(), size.height * 0.23f)
+                cubicTo(x - direction * 9.dp.toPx(), size.height * 0.28f,
+                    x - direction * 8.dp.toPx(), size.height * 0.31f, x - direction * 2.dp.toPx(), size.height * 0.34f)
+                moveTo(x - direction * 2.dp.toPx(), size.height * 0.62f)
+                cubicTo(x - direction * 9.dp.toPx(), size.height * 0.67f,
+                    x - direction * 8.dp.toPx(), size.height * 0.71f, x - direction * 2.dp.toPx(), size.height * 0.75f)
+            }
+            drawPath(innerWave, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke * 0.85f))
+            for (fraction in listOf(0.20f, 0.50f, 0.77f)) {
+                drawCircle(gold, 2.dp.toPx(), Offset(x - direction * 2.dp.toPx(), size.height * fraction))
+            }
+        }
     }
 }
 
