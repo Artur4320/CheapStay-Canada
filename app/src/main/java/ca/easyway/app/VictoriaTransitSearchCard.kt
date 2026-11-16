@@ -75,7 +75,7 @@ internal fun VictoriaTransitSearchCard(
                         loading = true
                         message = if (french) "Téléchargement des horaires…" else "Downloading timetable…"
                         scope.launch {
-                            val result = repository.downloadAndImport()
+                            val result = repository.ensureImported()
                             if (result.isSuccess) {
                                 originStops = repository.searchStopsNear(from.first, from.second)
                                 destinationStops = repository.searchStopsNear(to.first, to.second)
