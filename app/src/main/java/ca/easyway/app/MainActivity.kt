@@ -376,7 +376,7 @@ fun EasyWayApp() {
                                     Text("🇨🇦", style = MaterialTheme.typography.headlineLarge)
                                     Column(Modifier.weight(1f).padding(start = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text(
-                                            if (french) "Voyager dans une autre province" else "Another province",
+                                            if (french) "Voyager dans une autre province" else "Explore Canada",
                                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                                             color = Color(0xFF101828)
                                         )
