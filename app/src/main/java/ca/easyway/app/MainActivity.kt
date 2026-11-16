@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -148,6 +149,7 @@ fun EasyWayApp() {
     var originSuggestions by remember { mutableStateOf(emptyList<String>()) }
     var showOriginSuggestions by remember { mutableStateOf(false) }
     var destinationSuggestions by remember { mutableStateOf(emptyList<String>()) }
+    var showDestinationSuggestions by remember { mutableStateOf(false) }
     var cityValidationMessage by remember { mutableStateOf("") }
     var isValidatingCities by remember { mutableStateOf(false) }
     var locationMessage by remember { mutableStateOf("") }
@@ -499,16 +501,29 @@ fun EasyWayApp() {
                                 Text(if (french) "Utiliser ma position" else "Use my location")
                             }
                             if (locationMessage.isNotBlank()) Text(locationMessage, style = MaterialTheme.typography.bodySmall)
-                            OutlinedTextField(value = destination, onValueChange = { destination = it; cityValidationMessage = "" },
+                            OutlinedTextField(value = destination, onValueChange = {
+                                destination = it
+                                cityValidationMessage = ""
+                                showDestinationSuggestions = true
+                            },
                                 label = { Text(if (french) "Ville de destination" else "Destination city") },
                                 placeholder = { Text(if (french) "e.g. Kelowna, BC" else "e.g. Kelowna, BC") },
-                                modifier = Modifier.fillMaxWidth(), singleLine = true)
-                            Text(if (french) "Villes de la région" else "Cities in selected region",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            destinationSuggestions.forEach { suggestion ->
-                                TextButton(onClick = { destination = suggestion; destinationSuggestions = emptyList() }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                                modifier = Modifier.fillMaxWidth().onFocusChanged { focus ->
+                                    if (focus.isFocused) showDestinationSuggestions = true
+                                }, singleLine = true)
+                            if (showDestinationSuggestions) {
+                                Text(if (french) "Villes de la région" else "Cities in selected region",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
+                                    destinationSuggestions.forEach { suggestion ->
+                                        TextButton(onClick = {
+                                            destination = suggestion
+                                            showDestinationSuggestions = false
+                                        }, modifier = Modifier.fillMaxWidth()) {
+                                            Text("📍  $suggestion", modifier = Modifier.fillMaxWidth())
+                                        }
+                                    }
                                 }
                             }
                             OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
