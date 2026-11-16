@@ -325,11 +325,6 @@ fun EasyWayApp() {
                                 style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                                 color = Color(0xFF101828)
                             )
-                            Text(
-                                "Куда планируете поездку?",
-                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
-                                color = Color(0xFF344054)
-                            )
                             Card(
                                 Modifier.fillMaxWidth().heightIn(min = 86.dp).clickable {
                                     travelOutsideRegion = false
@@ -354,11 +349,6 @@ fun EasyWayApp() {
                                             if (selectedRegion == "ALL") "Stay in Canada" else "Stay in $selectedRegion",
                                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                                             color = Color(0xFF101828)
-                                        )
-                                        Text(
-                                            "Остаться в пределах ${if (selectedRegion == "ALL") "Канады" else if (selectedRegion == "British Columbia") "BC" else selectedRegion}",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = Color(0xFF475467)
                                         )
                                     }
                                     RadioButton(
@@ -389,11 +379,6 @@ fun EasyWayApp() {
                                             if (french) "Voyager dans une autre province" else "Another province",
                                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                                             color = Color(0xFF101828)
-                                        )
-                                        Text(
-                                            "Другая провинция или территория",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = Color(0xFF475467)
                                         )
                                     }
                                     RadioButton(
