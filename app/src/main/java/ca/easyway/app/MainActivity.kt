@@ -317,8 +317,8 @@ fun EasyWayApp() {
                         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.76f))
                     ) {
                         Column(
-                            Modifier.padding(horizontal = 22.dp, vertical = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
                                 if (french) "Où voyagez-vous ?" else "Where are you travelling?",
@@ -331,7 +331,7 @@ fun EasyWayApp() {
                                 color = Color(0xFF344054)
                             )
                             Card(
-                                Modifier.fillMaxWidth().heightIn(min = 104.dp).clickable {
+                                Modifier.fillMaxWidth().heightIn(min = 86.dp).clickable {
                                     travelOutsideRegion = false
                                     destinationRegion = selectedRegion
                                 },
@@ -345,7 +345,7 @@ fun EasyWayApp() {
                                 )
                             ) {
                                 Row(
-                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp),
+                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
                                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                                 ) {
                                     Text("🏞️", style = MaterialTheme.typography.headlineLarge)
@@ -369,7 +369,7 @@ fun EasyWayApp() {
                                 }
                             }
                             Card(
-                                Modifier.fillMaxWidth().heightIn(min = 104.dp).clickable { travelOutsideRegion = true },
+                                Modifier.fillMaxWidth().heightIn(min = 86.dp).clickable { travelOutsideRegion = true },
                                 shape = RoundedCornerShape(20.dp),
                                 border = androidx.compose.foundation.BorderStroke(
                                     if (travelOutsideRegion) 2.dp else 1.dp,
@@ -380,7 +380,7 @@ fun EasyWayApp() {
                                 )
                             ) {
                                 Row(
-                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp),
+                                    Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
                                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                                 ) {
                                     Text("🇨🇦", style = MaterialTheme.typography.headlineLarge)
@@ -408,7 +408,7 @@ fun EasyWayApp() {
                                     if (travelOutsideRegion || selectedRegion == "ALL") currentPage = 1
                                     else { destinationRegion = selectedRegion; currentPage = 2 }
                                 },
-                                modifier = Modifier.fillMaxWidth().height(64.dp),
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
                                 shape = RoundedCornerShape(18.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1268D8))
                             ) {
