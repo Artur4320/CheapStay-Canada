@@ -262,12 +262,11 @@ fun EasyWayApp() {
     var travelDate by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
     var travellers by remember { mutableIntStateOf(1) }
-    var includeOvernight by remember { mutableStateOf(false) }
+    var rooms by remember { mutableIntStateOf(1) }
     var showSearchInfo by remember { mutableStateOf(false) }
-    val transportOptions = listOf("Bus", "Ferry", "Train", "Flight", "Car", "Local transit")
-    val selectedTransport = remember { mutableStateListOf(*transportOptions.toTypedArray()) }
-    val overnightOptions = listOf("Hotel", "Motel", "Hostel", "Camping", "Cabin")
-    val selectedOvernight = remember { mutableStateListOf("Hotel", "Motel", "Hostel") }
+    val selectedTransport = remember { mutableStateListOf<String>() }
+    val accommodationOptions = listOf("Hotel", "Motel", "Hostel", "Camping", "Cabin")
+    val selectedAccommodation = remember { mutableStateListOf("Hotel", "Motel", "Hostel") }
 
     MaterialTheme(
         colorScheme = lightColorScheme(
@@ -558,6 +557,14 @@ fun EasyWayApp() {
                                         else -> {
                                             origin = fromCity.locality ?: fromText
                                             destination = toCity.locality ?: toText
+                                            selectedTransport.clear()
+                                            selectedTransport.addAll(suggestedTransportModes(
+                                                origin = fromCity.locality ?: fromText,
+                                                destination = toCity.locality ?: toText,
+                                                originRegion = originRegionAtSearch,
+                                                destinationRegion = destinationRegionAtSearch
+                                            ))
+                                            showSearchInfo = false
                                             currentPage = 3
                                         }
                                     }
@@ -571,7 +578,7 @@ fun EasyWayApp() {
                     if (cityValidationMessage.isNotBlank()) {
                         Text(cityValidationMessage, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
-                } else {
+                } else if (currentPage == 3) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text(if (french) "Options de voyage" else "Travel options", style = MaterialTheme.typography.titleLarge)
@@ -583,54 +590,53 @@ fun EasyWayApp() {
                             Text("$origin, $selectedRegion → $destination, $destinationRegion")
                             Text(if (french) "Départ : $travelDate" else "Departure: $travelDate",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            HorizontalDivider()
-                            Text(if (french) "Voyageurs" else "Travellers", style = MaterialTheme.typography.titleMedium)
-                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                OutlinedButton(onClick = { if (travellers > 1) travellers-- }, enabled = travellers > 1) { Text("−") }
-                                Text("$travellers")
-                                OutlinedButton(onClick = { if (travellers < 20) travellers++ }, enabled = travellers < 20) { Text("+") }
+                        }
+                    }
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(if (french) "Aperçu illustré du trajet" else "Illustrated route preview",
+                                style = MaterialTheme.typography.titleMedium)
+                            Box(Modifier.fillMaxWidth().height(156.dp).clip(RoundedCornerShape(16.dp))) {
+                                Canvas(Modifier.fillMaxSize()) {
+                                    drawRect(Color(0xFF58B9E8))
+                                    drawCircle(Color(0xFF4E9B63), size.minDimension * 0.42f,
+                                        Offset(size.width * 0.08f, size.height * 0.86f))
+                                    drawCircle(Color(0xFF347D54), size.minDimension * 0.36f,
+                                        Offset(size.width * 0.92f, size.height * 0.84f))
+                                    drawLine(Color.White, Offset(size.width * 0.18f, size.height * 0.72f),
+                                        Offset(size.width * 0.82f, size.height * 0.34f), strokeWidth = 5.dp.toPx())
+                                    drawCircle(Color(0xFFFFC857), 9.dp.toPx(), Offset(size.width * 0.18f, size.height * 0.72f))
+                                    drawCircle(Color(0xFFFFC857), 9.dp.toPx(), Offset(size.width * 0.82f, size.height * 0.34f))
+                                }
+                                Row(Modifier.fillMaxSize().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
+                                    Text("📍 $origin", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                                    Text("🚢 ✈️", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+                                    Text("$destination 📍", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                                }
                             }
+                            Text(if (french) "Illustration indicative, pas une carte de navigation." else "Illustrative preview — not a navigation map.",
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(if (french) "Comparer les transports" else "Choose transport", style = MaterialTheme.typography.titleLarge)
-                            Text(if (french) "Sélectionnez les moyens de transport à comparer." else "Select the transport options to compare.")
+                            Text(if (french) "Options adaptées à votre trajet" else "Suggested transport options",
+                                style = MaterialTheme.typography.titleLarge)
+                            Text(if (french) "Seuls les moyens pertinents pour cet itinéraire sont affichés." else "Only transport types that may fit this route are shown.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                transportOptions.forEach { mode ->
+                                selectedTransport.toList().forEach { mode ->
                                     FilterChip(selected = mode in selectedTransport, onClick = {
                                         if (mode in selectedTransport) selectedTransport.remove(mode)
-                                        else selectedTransport.add(mode)
-                                    }, label = { Text(if (!french) mode else when (mode) { "Bus" -> "Autobus"; "Ferry" -> "Traversier"; "Train" -> "Train"; "Flight" -> "Avion"; "Car" -> "Voiture"; else -> "Transport en commun" }) })
+                                    }, label = { Text(mode) })
                                 }
                             }
-                            Text(if (french) "Budget" else "Price", style = MaterialTheme.typography.titleMedium)
+                            Text(if (french) "Prix" else "Price", style = MaterialTheme.typography.titleMedium)
                             Text(if (french) "Aucune limite · Afficher tous les prix disponibles" else "No limit · Show all available prices",
                                 color = MaterialTheme.colorScheme.primary)
                             Text(if (french) "Le coût total et le prix de chaque étape seront affichés." else "Total trip cost and each leg's price will be shown.")
-                        }
-                    }
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(if (french) "Hébergement en cours de route" else "Overnight stays", style = MaterialTheme.typography.titleLarge)
-                            Text(if (french) "Aucun hébergement ne sera ajouté sans votre demande." else "No overnight stops are added unless you ask for them.")
-                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                Checkbox(checked = includeOvernight, onCheckedChange = { includeOvernight = it })
-                                Text(if (french) "Ajouter un hébergement" else "Include an overnight stay")
-                            }
-                            if (includeOvernight) {
-                                Text(if (french) "Types d’hébergement" else "Accommodation types")
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    overnightOptions.forEach { type ->
-                                        FilterChip(selected = type in selectedOvernight, onClick = {
-                                            if (type in selectedOvernight) selectedOvernight.remove(type)
-                                            else selectedOvernight.add(type)
-                                        }, label = { Text(if (!french) type else when (type) { "Hotel" -> "Hôtel"; "Motel" -> "Motel"; "Hostel" -> "Auberge de jeunesse"; "Camping" -> "Camping"; else -> "Chalet" }) })
-                                    }
-                                }
-                            }
                         }
                     }
                     Button(onClick = { showSearchInfo = true }, modifier = Modifier.fillMaxWidth(),
@@ -642,23 +648,62 @@ fun EasyWayApp() {
                             selectedRegion == "British Columbia" &&
                             destinationRegion == "British Columbia"
                         ) {
-                            VictoriaTransitSearchCard(
-                                origin = origin,
-                                destination = destination,
-                                travelDate = travelDate,
-                                french = french
-                            )
+                            VictoriaTransitSearchCard(origin = origin, destination = destination,
+                                travelDate = travelDate, french = french)
                         } else {
                             Card(Modifier.fillMaxWidth()) {
                                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(if (french) "Recherche de transport" else "Transport search", style = MaterialTheme.typography.titleMedium)
                                     Text(if (french) "Les horaires d’autobus Victoria sont disponibles pour les trajets locaux en Colombie-Britannique. D’autres réseaux seront ajoutés progressivement." else "Victoria bus schedules are available for local trips within British Columbia. Other transport networks will be added progressively.")
                                     Text(if (french) "Aucun prix ni aucune disponibilité ne sont inventés." else "No prices or availability are invented.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
+                    }
+                    OutlinedButton(onClick = { currentPage = 4 }, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (french) "Find accommodation" else "Find accommodation")
+                    }
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Text(if (french) "Hébergement" else "Accommodation", style = MaterialTheme.typography.titleLarge)
+                        TextButton(onClick = { currentPage = 3 }) { Text(if (french) "Retour" else "Back") }
+                    }
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Text(if (french) "Qui voyage ?" else "Who is travelling?", style = MaterialTheme.typography.titleLarge)
+                            Text(if (french) "Voyageurs" else "Travellers", style = MaterialTheme.typography.titleMedium)
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                                OutlinedButton(onClick = { if (travellers > 1) travellers-- }, enabled = travellers > 1) { Text("−") }
+                                Text("$travellers")
+                                OutlinedButton(onClick = { if (travellers < 20) travellers++ }, enabled = travellers < 20) { Text("+") }
+                            }
+                            HorizontalDivider()
+                            Text(if (french) "Chambres" else "Rooms", style = MaterialTheme.typography.titleMedium)
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                                OutlinedButton(onClick = { if (rooms > 1) rooms-- }, enabled = rooms > 1) { Text("−") }
+                                Text("$rooms")
+                                OutlinedButton(onClick = { if (rooms < 10) rooms++ }, enabled = rooms < 10) { Text("+") }
+                            }
+                            HorizontalDivider()
+                            Text(if (french) "Types d’hébergement" else "Accommodation types", style = MaterialTheme.typography.titleMedium)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                accommodationOptions.forEach { type ->
+                                    FilterChip(selected = type in selectedAccommodation, onClick = {
+                                        if (type in selectedAccommodation) selectedAccommodation.remove(type)
+                                        else selectedAccommodation.add(type)
+                                    }, label = { Text(type) })
+                                }
+                            }
+                            Text(if (french) "Les dates et les prix seront ajoutés à la recherche d’hébergement." else "Stay dates and prices will be set in the accommodation search.",
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Button(onClick = { currentPage = 3 }, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (french) "Enregistrer" else "Save preferences")
                     }
                 }
                     Text(if (french) "Le Canada d’abord · D’autres destinations suivront" else "Canada first · More destinations can come later",
