@@ -326,7 +326,7 @@ fun EasyWayApp() {
                                 color = Color(0xFF101828)
                             )
                             Card(
-                                Modifier.fillMaxWidth().heightIn(min = 86.dp).clickable {
+                                Modifier.fillMaxWidth().height(86.dp).clickable {
                                     travelOutsideRegion = false
                                     destinationRegion = selectedRegion
                                 },
@@ -359,7 +359,7 @@ fun EasyWayApp() {
                                 }
                             }
                             Card(
-                                Modifier.fillMaxWidth().heightIn(min = 86.dp).clickable { travelOutsideRegion = true },
+                                Modifier.fillMaxWidth().height(86.dp).clickable { travelOutsideRegion = true },
                                 shape = RoundedCornerShape(20.dp),
                                 border = androidx.compose.foundation.BorderStroke(
                                     if (travelOutsideRegion) 2.dp else 1.dp,
