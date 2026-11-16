@@ -312,7 +312,7 @@ fun EasyWayApp() {
                     Card(
                         Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.94f))
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.76f))
                     ) {
                         Column(
                             Modifier.padding(horizontal = 22.dp, vertical = 24.dp),
@@ -339,7 +339,7 @@ fun EasyWayApp() {
                                     if (!travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
                                 ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF) else Color.White.copy(alpha = 0.82f)
+                                    containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.82f) else Color.White.copy(alpha = 0.68f)
                                 )
                             ) {
                                 Row(
@@ -374,7 +374,7 @@ fun EasyWayApp() {
                                     if (travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
                                 ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF) else Color.White.copy(alpha = 0.82f)
+                                    containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.82f) else Color.White.copy(alpha = 0.68f)
                                 )
                             ) {
                                 Row(
