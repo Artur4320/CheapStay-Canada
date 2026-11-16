@@ -49,6 +49,34 @@ internal class VictoriaGtfsRepository(context: Context) {
         val toStopName: String
     )
 
+    /**
+     * Reuse the already imported local timetable database.
+     * The feed is downloaded only when the local database is empty or incomplete.
+     */
+    suspend fun ensureImported(): Result<Unit> = withContext(Dispatchers.IO) {
+        if (hasUsableLocalFeed()) {
+            Result.success(Unit)
+        } else {
+            downloadAndImport()
+        }
+    }
+
+    private fun hasUsableLocalFeed(): Boolean {
+        return try {
+            val db = helper.readableDatabase
+            fun rowCount(table: String): Long =
+                db.rawQuery("SELECT COUNT(*) FROM $table", null).use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getLong(0) else 0L
+                }
+            rowCount("stops") > 0L &&
+                rowCount("routes") > 0L &&
+                rowCount("trips") > 0L &&
+                rowCount("stop_times") > 0L
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     suspend fun downloadAndImport(): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
             val connection = (URL(SOURCE_URL).openConnection() as HttpURLConnection).apply {
