@@ -43,6 +43,29 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
+private fun suggestedTransportModes(
+    origin: String,
+    destination: String,
+    originRegion: String,
+    destinationRegion: String
+): List<String> {
+    val islandPlaces = listOf(
+        "saturna", "pender", "mayne", "gulf island", "salt spring",
+        "galiano", "gabriola", "denman", "hornby", "cortes", "quadra"
+    )
+    val from = origin.lowercase(Locale.ROOT)
+    val to = destination.lowercase(Locale.ROOT)
+    val involvesIsland = islandPlaces.any { from.contains(it) || to.contains(it) }
+    val victoriaToVancouver = (from.contains("victoria") && to.contains("vancouver")) ||
+        (from.contains("vancouver") && to.contains("victoria"))
+    return when {
+        originRegion != destinationRegion -> listOf("Flight", "Bus", "Car")
+        involvesIsland || victoriaToVancouver -> listOf("Ferry", "Bus", "Car") +
+            if (victoriaToVancouver) listOf("Flight") else emptyList()
+        else -> listOf("Bus", "Car")
+    }
+}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -265,6 +288,9 @@ fun EasyWayApp() {
     var rooms by remember { mutableIntStateOf(1) }
     var showSearchInfo by remember { mutableStateOf(false) }
     val selectedTransport = remember { mutableStateListOf<String>() }
+    val routeTransportOptions = remember(origin, destination, selectedRegion, destinationRegion) {
+        suggestedTransportModes(origin, destination, selectedRegion, destinationRegion)
+    }
     val accommodationOptions = listOf("Hotel", "Motel", "Hostel", "Camping", "Cabin")
     val selectedAccommodation = remember { mutableStateListOf("Hotel", "Motel", "Hostel") }
 
@@ -627,9 +653,10 @@ fun EasyWayApp() {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                selectedTransport.toList().forEach { mode ->
+                                routeTransportOptions.forEach { mode ->
                                     FilterChip(selected = mode in selectedTransport, onClick = {
                                         if (mode in selectedTransport) selectedTransport.remove(mode)
+                                        else selectedTransport.add(mode)
                                     }, label = { Text(mode) })
                                 }
                             }
@@ -662,7 +689,7 @@ fun EasyWayApp() {
                         }
                     }
                     OutlinedButton(onClick = { currentPage = 4 }, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (french) "Find accommodation" else "Find accommodation")
+                        Text(if (french) "Trouver un hébergement" else "Find accommodation")
                     }
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
