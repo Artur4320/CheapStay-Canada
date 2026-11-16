@@ -676,23 +676,14 @@ fun EasyWayApp() {
         )
         AlertDialog(
             onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false },
-            title = { Text(if (french) "Où souhaitez-vous voyager ?" else "Where would you like to travel?") },
+            title = { Text(if (french) "Où vous trouvez-vous actuellement ?" else "Where are you located now?") },
             text = {
                 Column(
                     Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(if (french) "Choisissez une région de voyage" else "Choose your travel area",
+                    Text(if (french) "Choisissez votre province ou territoire actuel" else "Choose your current province or territory",
                         style = MaterialTheme.typography.bodyMedium)
-                    OutlinedButton(
-                        onClick = {
-                            selectedRegion = "ALL"
-                            preferences.edit().putString("travel_region", selectedRegion).apply()
-                            showRegionDialog = false
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("🇨🇦  " + if (french) "Tout le Canada" else "All Canada") }
-                    HorizontalDivider()
                     regions.forEach { region ->
                         OutlinedButton(
                             onClick = {
