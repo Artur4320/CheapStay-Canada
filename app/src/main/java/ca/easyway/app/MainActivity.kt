@@ -425,7 +425,7 @@ fun EasyWayApp() {
                             regionOptions.filter { it != selectedRegion }.forEach { region ->
                                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { destinationRegion = region; currentPage = 2 }.padding(horizontal = 10.dp, vertical = 9.dp),
                                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                    Text("🇨🇦", style = MaterialTheme.typography.titleLarge)
+                                    ProvinceFlag(region)
                                     Text(if (french) when (region) {
                                         "British Columbia" -> "Colombie-Britannique"; "Quebec" -> "Québec"; "New Brunswick" -> "Nouveau-Brunswick"
                                         "Nova Scotia" -> "Nouvelle-Écosse"; "Prince Edward Island" -> "Île-du-Prince-Édouard"
@@ -739,6 +739,100 @@ fun EasyWayApp() {
     }
 }
 
+
+@Composable
+private fun ProvinceFlag(region: String) {
+    Canvas(Modifier.size(width = 36.dp, height = 24.dp)) {
+        val w = size.width
+        val h = size.height
+        val white = Color.White
+        val red = Color(0xFFC8102E)
+        val navy = Color(0xFF003876)
+        val blue = Color(0xFF005EB8)
+        val green = Color(0xFF006847)
+        val gold = Color(0xFFFFD100)
+        // Simplified, province-specific flag motifs sized for the province list.
+        when (region) {
+            "Quebec" -> {
+                drawRect(Color(0xFF003DA5))
+                val s = h * 0.19f
+                listOf(Offset(w * .25f, h * .25f), Offset(w * .75f, h * .25f),
+                    Offset(w * .25f, h * .75f), Offset(w * .75f, h * .75f)).forEach {
+                    drawCircle(white, s, it)
+                    drawRect(Color(0xFF003DA5), Offset(it.x - s * .18f, it.y - s * .1f), androidx.compose.ui.geometry.Size(s * .36f, s * 1.2f))
+                }
+            }
+            "Alberta" -> {
+                drawRect(navy)
+                drawRect(white, Offset(w * .37f, h * .20f), androidx.compose.ui.geometry.Size(w * .26f, h * .60f))
+                drawRect(Color(0xFFB5121B), Offset(w * .40f, h * .48f), androidx.compose.ui.geometry.Size(w * .20f, h * .25f))
+                drawRect(gold, Offset(w * .42f, h * .27f), androidx.compose.ui.geometry.Size(w * .16f, h * .18f))
+            }
+            "Saskatchewan" -> {
+                drawRect(gold)
+                drawRect(green, Offset(0f, h * .52f), androidx.compose.ui.geometry.Size(w, h * .48f))
+                drawCircle(Color(0xFFB5121B), h * .18f, Offset(w * .5f, h * .48f))
+                drawCircle(white, h * .11f, Offset(w * .5f, h * .48f))
+            }
+            "Manitoba", "Ontario" -> {
+                drawRect(red)
+                drawRect(navy, Offset(0f, 0f), androidx.compose.ui.geometry.Size(w * .34f, h))
+                drawRect(white, Offset(w * .34f, 0f), androidx.compose.ui.geometry.Size(w * .66f, h))
+                drawRect(red, Offset(w * .34f, 0f), androidx.compose.ui.geometry.Size(w * .66f, h))
+                drawRect(white, Offset(w * .49f, h * .22f), androidx.compose.ui.geometry.Size(w * .24f, h * .56f))
+                drawRect(if (region == "Ontario") red else green, Offset(w * .54f, h * .38f), androidx.compose.ui.geometry.Size(w * .14f, h * .22f))
+            }
+            "New Brunswick" -> {
+                drawRect(white)
+                drawRect(blue, Offset(0f, 0f), androidx.compose.ui.geometry.Size(w, h * .34f))
+                drawRect(gold, Offset(0f, h * .34f), androidx.compose.ui.geometry.Size(w, h * .66f))
+                drawCircle(Color(0xFF8B4513), h * .14f, Offset(w * .5f, h * .60f))
+                drawLine(Color(0xFF8B4513), Offset(w * .34f, h * .76f), Offset(w * .66f, h * .76f), h * .06f)
+            }
+            "Nova Scotia" -> {
+                drawRect(white)
+                drawLine(blue, Offset(0f, 0f), Offset(w, h), h * .30f)
+                drawLine(blue, Offset(w, 0f), Offset(0f, h), h * .30f)
+                drawRect(white, Offset(w * .38f, 0f), androidx.compose.ui.geometry.Size(w * .24f, h))
+                drawRect(white, Offset(0f, h * .38f), androidx.compose.ui.geometry.Size(w, h * .24f))
+                drawRect(red, Offset(w * .43f, h * .20f), androidx.compose.ui.geometry.Size(w * .14f, h * .60f))
+                drawRect(red, Offset(w * .20f, h * .43f), androidx.compose.ui.geometry.Size(w * .60f, h * .14f))
+            }
+            "Prince Edward Island" -> {
+                drawRect(white)
+                drawRect(red, Offset(0f, 0f), androidx.compose.ui.geometry.Size(w, h * .34f))
+                drawRect(red, Offset(0f, h * .78f), androidx.compose.ui.geometry.Size(w, h * .22f))
+                drawCircle(gold, h * .14f, Offset(w * .5f, h * .53f))
+                drawLine(green, Offset(w * .5f, h * .43f), Offset(w * .5f, h * .78f), h * .05f)
+            }
+            "Newfoundland and Labrador" -> {
+                drawRect(blue)
+                drawLine(white, Offset(w * .12f, h * .12f), Offset(w * .78f, h * .88f), h * .28f)
+                drawLine(white, Offset(w * .12f, h * .88f), Offset(w * .78f, h * .12f), h * .28f)
+                drawLine(red, Offset(w * .22f, h * .12f), Offset(w * .88f, h * .78f), h * .10f)
+                drawLine(red, Offset(w * .22f, h * .78f), Offset(w * .88f, h * .12f), h * .10f)
+            }
+            "Yukon" -> {
+                drawRect(white)
+                drawRect(green, Offset(0f, 0f), androidx.compose.ui.geometry.Size(w / 3f, h))
+                drawRect(blue, Offset(w * 2f / 3f, 0f), androidx.compose.ui.geometry.Size(w / 3f, h))
+                drawCircle(gold, h * .19f, Offset(w * .5f, h * .5f))
+            }
+            "Northwest Territories" -> {
+                drawRect(blue)
+                drawRect(white, Offset(w * .36f, 0f), androidx.compose.ui.geometry.Size(w * .28f, h))
+                drawCircle(gold, h * .15f, Offset(w * .5f, h * .5f))
+            }
+            "Nunavut" -> {
+                drawRect(Color(0xFFC8102E))
+                drawRect(gold, Offset(w * .50f, 0f), androidx.compose.ui.geometry.Size(w * .50f, h))
+                drawCircle(white, h * .22f, Offset(w * .5f, h * .5f))
+            }
+            else -> drawRect(blue)
+        }
+        drawRect(Color(0xFF222222), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.7.dp.toPx()))
+    }
+}
 
 @Composable
 private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
