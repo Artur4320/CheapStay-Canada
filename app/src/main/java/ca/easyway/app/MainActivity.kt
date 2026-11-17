@@ -536,7 +536,7 @@ fun EasyWayApp() {
                                 showDestinationSuggestions = true
                             },
                                 label = { Text(if (french) "Ville de destination" else "Destination city") },
-                                placeholder = { Text(if (french) "e.g. Kelowna, BC" else "e.g. Kelowna, BC") },
+                                placeholder = { },
                                 modifier = Modifier.fillMaxWidth().onFocusChanged { focus ->
                                     if (focus.isFocused) showDestinationSuggestions = true
                                 }, singleLine = true)
