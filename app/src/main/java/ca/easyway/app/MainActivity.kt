@@ -629,15 +629,23 @@ fun EasyWayApp() {
                         Text(if (french) "Options de voyage" else "Travel options", style = MaterialTheme.typography.titleLarge)
                         TextButton(onClick = { currentPage = 2 }) { Text(if (french) "Retour" else "Back") }
                     }
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
+                    ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(if (french) "Votre trajet" else "Your trip", style = MaterialTheme.typography.titleMedium)
                             Text("$origin, $selectedRegion → $destination, $destinationRegion")
                             Text(if (french) "Départ : $travelDate" else "Departure: $travelDate",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                color = Color.Black)
                         }
                     }
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
+                    ) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(if (french) "Carte du trajet" else "Route map",
                                 style = MaterialTheme.typography.titleMedium)
@@ -651,7 +659,11 @@ fun EasyWayApp() {
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
+                    ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(if (french) "Options adaptées à votre trajet" else "Suggested transport options",
                                 style = MaterialTheme.typography.titleLarge)
@@ -668,7 +680,7 @@ fun EasyWayApp() {
                             }
                             Text(if (french) "Prix" else "Price", style = MaterialTheme.typography.titleMedium)
                             Text(if (french) "Aucune limite · Afficher tous les prix disponibles" else "No limit · Show all available prices",
-                                color = MaterialTheme.colorScheme.primary)
+                                color = Color.Black)
                             Text(if (french) "Le coût total et le prix de chaque étape seront affichés." else "Total trip cost and each leg's price will be shown.")
                         }
                     }
