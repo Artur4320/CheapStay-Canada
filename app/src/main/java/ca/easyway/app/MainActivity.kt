@@ -751,7 +751,7 @@ fun EasyWayApp() {
         Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
             Box(Modifier.fillMaxWidth().heightIn(min = 560.dp, max = 640.dp)) {
                 CanadaDialogArtwork(Modifier.matchParentSize())
-                Column(Modifier.fillMaxSize().padding(start = 52.dp, end = 52.dp, top = 78.dp, bottom = 42.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                Column(Modifier.fillMaxSize().padding(start = 58.dp, end = 58.dp, top = 78.dp, bottom = 42.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                     Text(if (french) "Où vous trouvez-vous actuellement ?" else "Where are you located now?", color = Color(0xFF14263D), style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     Spacer(Modifier.height(6.dp))
                     Text(if (french) "Choisissez votre province ou territoire actuel" else "Choose your current province or territory", color = Color(0xFF58616B), style = MaterialTheme.typography.bodySmall)
@@ -786,33 +786,161 @@ fun EasyWayApp() {
 @Composable
 private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val navy = Color(0xFF14263D); val red = Color(0xFFB3262D); val gold = Color(0xFFC49A54); val blue = Color(0xFF315B78)
-        drawRoundRect(Color(0xFFFFFCF5), cornerRadius = androidx.compose.ui.geometry.CornerRadius(28.dp.toPx()))
-        drawRoundRect(navy, cornerRadius = androidx.compose.ui.geometry.CornerRadius(28.dp.toPx()), style = androidx.compose.ui.graphics.drawscope.Stroke(5.dp.toPx()))
-        drawRoundRect(red, topLeft = Offset(7.dp.toPx(), 7.dp.toPx()), size = androidx.compose.ui.geometry.Size(size.width - 14.dp.toPx(), size.height - 14.dp.toPx()), cornerRadius = androidx.compose.ui.geometry.CornerRadius(24.dp.toPx()), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
-        val cx = size.width / 2f
-        val leaf = androidx.compose.ui.graphics.Path().apply {
-            moveTo(cx, 18.dp.toPx()); lineTo(cx - 7.dp.toPx(), 30.dp.toPx()); lineTo(cx - 17.dp.toPx(), 26.dp.toPx()); lineTo(cx - 13.dp.toPx(), 38.dp.toPx()); lineTo(cx - 23.dp.toPx(), 43.dp.toPx()); lineTo(cx - 9.dp.toPx(), 47.dp.toPx()); lineTo(cx - 8.dp.toPx(), 57.dp.toPx()); lineTo(cx, 52.dp.toPx()); lineTo(cx + 8.dp.toPx(), 57.dp.toPx()); lineTo(cx + 9.dp.toPx(), 47.dp.toPx()); lineTo(cx + 23.dp.toPx(), 43.dp.toPx()); lineTo(cx + 13.dp.toPx(), 38.dp.toPx()); lineTo(cx + 17.dp.toPx(), 26.dp.toPx()); lineTo(cx + 7.dp.toPx(), 30.dp.toPx()); close()
+        val navy = Color(0xFF14263D)
+        val red = Color(0xFF8F171D)
+        val gold = Color(0xFFC49A54)
+        val cream = Color(0xFFFFFCF7)
+        val blue = Color(0xFF244B63)
+        val w = size.width
+        val h = size.height
+        val stroke = 3.dp.toPx()
+        fun point(x: Float, y: Float) = Offset(w * x, h * y)
+        fun line(color: Color, x1: Float, y1: Float, x2: Float, y2: Float, width: Float = stroke) {
+            drawLine(color, point(x1, y1), point(x2, y2), width)
         }
-        drawPath(leaf, red)
-        val peaks = androidx.compose.ui.graphics.Path().apply { moveTo(22.dp.toPx(), 78.dp.toPx()); lineTo(70.dp.toPx(), 43.dp.toPx()); lineTo(100.dp.toPx(), 78.dp.toPx()); lineTo(138.dp.toPx(), 48.dp.toPx()); lineTo(170.dp.toPx(), 78.dp.toPx()); lineTo(size.width - 22.dp.toPx(), 78.dp.toPx()) }
-        drawPath(peaks, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
-        drawLine(gold, Offset(22.dp.toPx(), 83.dp.toPx()), Offset(size.width - 22.dp.toPx(), 83.dp.toPx()), 2.dp.toPx())
-        for (x in listOf(24f, 39f, 54f, size.width / 4f, size.width - size.width / 4f, size.width - 54f, size.width - 39f, size.width - 24f)) {
-            val xx = x.dp.toPx(); val top = 105.dp.toPx(); val base = 150.dp.toPx()
-            drawLine(navy, Offset(xx, base), Offset(xx, top), 2.dp.toPx())
-            for (i in 0..2) { val y = top + i * 11.dp.toPx(); val half = (8 - i).dp.toPx(); val p = androidx.compose.ui.graphics.Path().apply { moveTo(xx - half, y + 10.dp.toPx()); lineTo(xx, y); lineTo(xx + half, y + 10.dp.toPx()) }; drawPath(p, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx())) }
+        fun pine(x: Float, y: Float, scale: Float = 1f) {
+            val trunkTop = h * y
+            val trunkBottom = trunkTop + 43.dp.toPx() * scale
+            val xx = w * x
+            drawLine(navy, Offset(xx, trunkTop), Offset(xx, trunkBottom), 2.dp.toPx() * scale)
+            for (i in 0..2) {
+                val yy = trunkTop + i * 11.dp.toPx() * scale
+                val half = (10 - i * 2).dp.toPx() * scale
+                val p = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(xx - half, yy + 12.dp.toPx() * scale)
+                    lineTo(xx, yy)
+                    lineTo(xx + half, yy + 12.dp.toPx() * scale)
+                }
+                drawPath(p, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx() * scale))
+            }
         }
-        listOf(Offset(24.dp.toPx(), size.height * .44f), Offset(size.width - 24.dp.toPx(), size.height * .44f)).forEach { drawCircle(gold, 5.dp.toPx(), it); drawCircle(red, 2.dp.toPx(), it) }
-        val by = size.height - 25.dp.toPx()
-        drawLine(blue, Offset(25.dp.toPx(), by), Offset(size.width - 25.dp.toPx(), by), 2.dp.toPx())
-        drawLine(navy, Offset(cx, by - 17.dp.toPx()), Offset(cx, by + 12.dp.toPx()), 2.dp.toPx())
-        drawLine(navy, Offset(cx - 13.dp.toPx(), by), Offset(cx + 13.dp.toPx(), by), 2.dp.toPx())
-        drawCircle(gold, 15.dp.toPx(), Offset(cx, by), style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
-        for (i in 0..2) { val y = by + (i - 1) * 5.dp.toPx(); drawLine(blue, Offset(25.dp.toPx(), y), Offset(size.width * .34f, y + 2.dp.toPx()), 1.dp.toPx()); drawLine(blue, Offset(size.width * .66f, y + 2.dp.toPx()), Offset(size.width - 25.dp.toPx(), y), 1.dp.toPx()) }
+        fun star(x: Float, y: Float, r: Float) {
+            val c = point(x, y)
+            val p = androidx.compose.ui.graphics.Path().apply {
+                moveTo(c.x, c.y - r); lineTo(c.x + r * .22f, c.y - r * .22f)
+                lineTo(c.x + r, c.y); lineTo(c.x + r * .22f, c.y + r * .22f)
+                lineTo(c.x, c.y + r); lineTo(c.x - r * .22f, c.y + r * .22f)
+                lineTo(c.x - r, c.y); lineTo(c.x - r * .22f, c.y - r * .22f); close()
+            }
+            drawPath(p, cream)
+        }
+        fun maple(cx: Float, cy: Float, r: Float) {
+            val c = point(cx, cy)
+            val p = androidx.compose.ui.graphics.Path().apply {
+                moveTo(c.x, c.y - r)
+                lineTo(c.x - r*.18f, c.y - r*.48f); lineTo(c.x-r*.55f,c.y-r*.62f)
+                lineTo(c.x-r*.43f,c.y-r*.22f); lineTo(c.x-r*.88f,c.y-r*.08f)
+                lineTo(c.x-r*.48f,c.y+r*.12f); lineTo(c.x-r*.58f,c.y+r*.48f)
+                lineTo(c.x-r*.12f,c.y+r*.32f); lineTo(c.x-r*.08f,c.y+r*.78f)
+                lineTo(c.x+r*.08f,c.y+r*.78f); lineTo(c.x+r*.12f,c.y+r*.32f)
+                lineTo(c.x+r*.58f,c.y+r*.48f); lineTo(c.x+r*.48f,c.y+r*.12f)
+                lineTo(c.x+r*.88f,c.y-r*.08f); lineTo(c.x+r*.43f,c.y-r*.22f)
+                lineTo(c.x+r*.55f,c.y-r*.62f); lineTo(c.x+r*.18f,c.y-r*.48f); close()
+            }
+            drawPath(p, red)
+            drawRect(red, Offset(c.x-r*.07f,c.y+r*.55f), androidx.compose.ui.geometry.Size(r*.14f,r*.42f))
+        }
+        fun mountainLine(y: Float, color: Color, width: Float) {
+            val p = androidx.compose.ui.graphics.Path().apply {
+                moveTo(w*.08f,h*y); lineTo(w*.25f,h*(y-.07f)); lineTo(w*.34f,h*y)
+                lineTo(w*.48f,h*(y-.09f)); lineTo(w*.61f,h*y); lineTo(w*.74f,h*(y-.07f))
+                lineTo(w*.91f,h*y)
+            }
+            drawPath(p,color,style=androidx.compose.ui.graphics.drawscope.Stroke(width,cap=androidx.compose.ui.graphics.StrokeCap.Square))
+        }
+        fun animal(x: Float, y: Float, scale: Float, kind: String) {
+            val left = w*x; val top = h*y
+            val s = 38.dp.toPx()*scale
+            val p = androidx.compose.ui.graphics.Path()
+            when (kind) {
+                "eagle" -> {
+                    p.moveTo(left-s,top); p.cubicTo(left-s*.65f,top-s*.65f,left+s*.35f,top-s*.45f,left+s,top-s*.08f)
+                    p.cubicTo(left+s*.52f,top+s*.05f,left+s*.1f,top+s*.38f,left-s*.55f,top+s*.32f)
+                    p.cubicTo(left-s*.15f,top+s*.18f,left-s*.15f,top+s*.05f,left-s,top); p.close()
+                }
+                "wolf" -> {
+                    p.moveTo(left-s,top+s*.1f); p.lineTo(left-s*.55f,top-s*.42f); p.lineTo(left-s*.18f,top-s*.28f)
+                    p.lineTo(left+s*.12f,top-s*.62f); p.lineTo(left+s*.35f,top-s*.25f)
+                    p.lineTo(left+s,top-s*.02f); p.lineTo(left+s*.42f,top+s*.42f); p.lineTo(left-s*.42f,top+s*.42f); p.close()
+                }
+                "whale" -> {
+                    p.moveTo(left-s,top); p.cubicTo(left-s*.35f,top-s*.58f,left+s*.45f,top-s*.48f,left+s,top)
+                    p.cubicTo(left+s*.45f,top+s*.48f,left-s*.35f,top+s*.42f,left-s,top)
+                    p.moveTo(left+s*.65f,top-s*.05f); p.lineTo(left+s,top-s*.45f); p.lineTo(left+s*.92f,top+s*.02f); p.close()
+                }
+                else -> {
+                    p.moveTo(left-s,top+s*.18f); p.cubicTo(left-s*.7f,top-s*.38f,left+s*.45f,top-s*.38f,left+s,top+s*.12f)
+                    p.cubicTo(left+s*.55f,top+s*.52f,left-s*.5f,top+s*.52f,left-s,top+s*.18f)
+                    p.moveTo(left-s*.1f,top-s*.18f); p.lineTo(left-s*.38f,top-s*.78f); p.lineTo(left-s*.2f,top-s*.35f)
+                    p.moveTo(left+s*.1f,top-s*.18f); p.lineTo(left+s*.38f,top-s*.78f); p.lineTo(left+s*.2f,top-s*.35f)
+                }
+            }
+            drawPath(p, navy)
+            drawCircle(cream, 1.8.dp.toPx()*scale, Offset(left+s*.35f,top-s*.02f))
+        }
+
+        drawRoundRect(cream, cornerRadius=androidx.compose.ui.geometry.CornerRadius(30.dp.toPx()))
+        drawRoundRect(navy, cornerRadius=androidx.compose.ui.geometry.CornerRadius(30.dp.toPx()),
+            style=androidx.compose.ui.graphics.drawscope.Stroke(5.dp.toPx()))
+        drawRoundRect(red, topLeft=Offset(7.dp.toPx(),7.dp.toPx()),
+            size=androidx.compose.ui.geometry.Size(w-14.dp.toPx(),h-14.dp.toPx()),
+            cornerRadius=androidx.compose.ui.geometry.CornerRadius(25.dp.toPx()),
+            style=androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+
+        // Layered red, navy and gold ornamental bands frame the content without entering it.
+        val topWave = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w*.04f,h*.12f); cubicTo(w*.22f,h*.02f,w*.32f,h*.14f,w*.5f,h*.12f)
+            cubicTo(w*.68f,h*.14f,w*.78f,h*.02f,w*.96f,h*.12f)
+        }
+        drawPath(topWave,red,style=androidx.compose.ui.graphics.drawscope.Stroke(5.dp.toPx()))
+        val goldWave = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w*.05f,h*.145f); cubicTo(w*.24f,h*.07f,w*.34f,h*.18f,w*.5f,h*.15f)
+            cubicTo(w*.66f,h*.18f,w*.76f,h*.07f,w*.95f,h*.145f)
+        }
+        drawPath(goldWave,gold,style=androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
+
+        maple(.5f,.075f,27.dp.toPx())
+        mountainLine(.105f,navy,4.dp.toPx())
+        mountainLine(.12f,gold,2.dp.toPx())
+        star(.105f,.085f,10.dp.toPx()); star(.895f,.085f,10.dp.toPx())
+        pine(.09f,.12f,.65f); pine(.14f,.13f,.55f); pine(.86f,.13f,.55f); pine(.91f,.12f,.65f)
+
+        // Side wildlife emblems echo the reference illustration while leaving the button column clear.
+        animal(.105f,.30f,.9f,"eagle")
+        animal(.895f,.30f,.9f,"wolf")
+        animal(.105f,.70f,.85f,"whale")
+        animal(.895f,.70f,.9f,"moose")
+        for (side in 0..1) {
+            val x = if (side==0) .065f else .935f
+            pine(x,.405f,.72f); pine(x,.455f,.55f)
+            maple(x,.535f,17.dp.toPx())
+            star(x,.625f,7.dp.toPx())
+            val ribbon = androidx.compose.ui.graphics.Path().apply {
+                moveTo(w*x,h*.78f); cubicTo(w*(if(side==0).02f else .98f),h*.84f,w*(if(side==0).16f else .84f),h*.87f,w*x,h*.92f)
+            }
+            drawPath(ribbon,red,style=androidx.compose.ui.graphics.drawscope.Stroke(4.dp.toPx()))
+            drawPath(ribbon,gold,style=androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
+        }
+
+        // Bottom coastal waves, mountain peaks and compass.
+        val bottom = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w*.04f,h*.94f); cubicTo(w*.2f,h*.99f,w*.3f,h*.9f,w*.42f,h*.94f)
+            cubicTo(w*.5f,h*.98f,w*.58f,h*.9f,w*.7f,h*.94f); cubicTo(w*.82f,h*.99f,w*.9f,h*.98f,w*.96f,h*.94f)
+        }
+        drawPath(bottom,navy,style=androidx.compose.ui.graphics.drawscope.Stroke(5.dp.toPx()))
+        mountainLine(.91f,navy,3.dp.toPx())
+        val c=point(.5f,.925f); val r=20.dp.toPx()
+        drawCircle(gold,r*1.45f,c,style=androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+        drawCircle(red,r*1.2f,c,style=androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
+        val compass=androidx.compose.ui.graphics.Path().apply {
+            moveTo(c.x,c.y-r); lineTo(c.x+r*.2f,c.y); lineTo(c.x,c.y+r); lineTo(c.x-r*.2f,c.y); close()
+            moveTo(c.x-r,c.y); lineTo(c.x,c.y-r*.2f); lineTo(c.x+r,c.y); lineTo(c.x,c.y+r*.2f); close()
+        }
+        drawPath(compass,navy)
+        line(gold,.08f,.945f,.32f,.945f,1.5.dp.toPx())
+        line(gold,.68f,.945f,.92f,.945f,1.5.dp.toPx())
     }
 }
-
 @Composable
 private fun BritishColumbiaCardArtwork(modifier: Modifier = Modifier) {
     Canvas(modifier) {
