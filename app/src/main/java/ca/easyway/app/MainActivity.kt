@@ -647,7 +647,7 @@ fun EasyWayApp() {
                                 french = french,
                                 modifier = Modifier.fillMaxWidth().height(260.dp)
                             )
-                            Text(if (french) "Carte OpenStreetMap · Tracé routier indicatif" else "OpenStreetMap · Indicative road route",
+                            Text(if (french) "© OpenStreetMap contributors · Itinéraire indicatif" else "© OpenStreetMap contributors · Indicative route",
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
