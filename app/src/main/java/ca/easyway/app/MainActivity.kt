@@ -632,74 +632,101 @@ fun EasyWayApp() {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.70f)),
-                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF183653)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF4)),
+                        border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF183653)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(
-                            Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 15.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                                    Text("✦", color = Color(0xFFB58A3A), style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        if (french) "VOTRE VOYAGE" else "YOUR TRIP",
-                                        color = Color(0xFF183653),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                        letterSpacing = 1.2.sp
+                        Column(Modifier.fillMaxWidth()) {
+                            Box(
+                                Modifier.fillMaxWidth()
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(Color(0xFFF8F0DF), Color(0xFFE6F0F1), Color(0xFFDCEAF0))
+                                        )
                                     )
-                                }
-                                Text("CANADA", color = Color(0xFF9A2630),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    letterSpacing = 1.4.sp)
-                            }
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(if (french) "DÉPART" else "FROM",
-                                        color = Color(0xFF66788A), style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
-                                    Text("$origin, ${if (selectedRegion == "British Columbia") "BC" else selectedRegion}",
-                                        color = Color(0xFF101828), style = MaterialTheme.typography.titleMedium,
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text("🍁", fontSize = 29.sp)
+                                        Text(
+                                            if (french) "Votre voyage" else "Your trip",
+                                            color = Color(0xFF102D4C),
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                        )
+                                    }
+                                    Text("CANADA", color = Color(0xFF9B252D),
+                                        style = MaterialTheme.typography.labelMedium,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                        maxLines = 1)
-                                }
-                                Text("→", color = Color(0xFFB58A3A),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                                Column(Modifier.weight(1f)) {
-                                    Text(if (french) "DESTINATION" else "TO",
-                                        color = Color(0xFF66788A), style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
-                                    Text("$destination, ${if (destinationRegion == "British Columbia") "BC" else destinationRegion}",
-                                        color = Color(0xFF101828), style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                        maxLines = 1)
+                                        letterSpacing = 1.5.sp)
                                 }
                             }
                             Box(
-                                Modifier.fillMaxWidth()
-                                    .background(Color(0xFFEAF1F7).copy(alpha = 0.82f), RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                Modifier.fillMaxWidth().height(5.dp)
+                                    .background(Brush.horizontalGradient(
+                                        listOf(Color(0xFF9B252D), Color(0xFFF7F1E5), Color(0xFF9B252D))
+                                    ))
+                            )
+                            Row(
+                                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(7.dp)
+                            ) {
+                                Column(
+                                    Modifier.weight(1f).border(1.5.dp, Color(0xFFC9AE72), RoundedCornerShape(18.dp))
+                                        .background(Color(0xFFFFFEFA), RoundedCornerShape(18.dp))
+                                        .padding(horizontal = 10.dp, vertical = 10.dp)
+                                ) {
+                                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                        Text("⌖", color = Color(0xFFB63A32), fontSize = 19.sp)
+                                        Text(if (french) "DÉPART" else "FROM", color = Color(0xFF68717C),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                    }
+                                    Text("$origin, ${if (selectedRegion == "British Columbia") "BC" else selectedRegion}",
+                                        color = Color(0xFF102D4C), style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, maxLines = 1)
+                                }
+                                Text("→", color = Color(0xFF102D4C), style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                Column(
+                                    Modifier.weight(1f).border(1.5.dp, Color(0xFFC9AE72), RoundedCornerShape(18.dp))
+                                        .background(Color(0xFFFFFEFA), RoundedCornerShape(18.dp))
+                                        .padding(horizontal = 10.dp, vertical = 10.dp)
+                                ) {
+                                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                        Text("⌖", color = Color(0xFFB63A32), fontSize = 19.sp)
+                                        Text(if (french) "ARRIVÉE" else "TO", color = Color(0xFF68717C),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                    }
+                                    Text("$destination, ${if (destinationRegion == "British Columbia") "BC" else destinationRegion}",
+                                        color = Color(0xFF102D4C), style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, maxLines = 1)
+                                }
+                            }
+                            Box(
+                                Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, bottom = 14.dp)
+                                    .background(Color(0xFF123D68), RoundedCornerShape(30.dp))
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                contentAlignment = androidx.compose.ui.Alignment.Center
                             ) {
                                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("◷", color = Color(0xFF183653), style = MaterialTheme.typography.titleMedium)
+                                    Text("▦", color = Color(0xFF9ED8F0), fontSize = 20.sp)
                                     Text(
                                         if (french) "Départ : $travelDate" else "Departure: $travelDate",
-                                        color = Color(0xFF183653), style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                        color = Color.White, style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                                     )
                                 }
                             }
