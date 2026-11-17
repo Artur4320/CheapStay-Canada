@@ -631,7 +631,7 @@ fun EasyWayApp() {
                     }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -643,7 +643,7 @@ fun EasyWayApp() {
                     }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
                     ) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -661,7 +661,7 @@ fun EasyWayApp() {
                     }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.5f)),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
