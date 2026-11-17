@@ -761,21 +761,59 @@ fun EasyWayApp() {
     if (showRegionDialog) {
         val regions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
         Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
-            Box(Modifier.fillMaxWidth().heightIn(min = 560.dp, max = 640.dp)) {
-                CanadaDialogArtwork(Modifier.matchParentSize())
-                Column(Modifier.fillMaxSize().padding(start = 58.dp, end = 58.dp, top = 78.dp, bottom = 42.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                    Text(if (french) "Où vous trouvez-vous actuellement ?" else "Where are you located now?", color = Color(0xFF14263D), style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                    Spacer(Modifier.height(6.dp))
-                    Text(if (french) "Choisissez votre province ou territoire actuel" else "Choose your current province or territory", color = Color(0xFF58616B), style = MaterialTheme.typography.bodySmall)
-                    Spacer(Modifier.height(12.dp))
-                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(5.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+            Box(
+                Modifier.fillMaxWidth().widthIn(max = 420.dp).aspectRatio(0.75f)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.canada_province_frame),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.FillBounds
+                )
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(start = 18.dp, end = 18.dp, top = 58.dp, bottom = 112.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        if (french) "Choisissez votre province" else "Choose your province",
+                        color = Color(0xFF14263D),
+                        fontSize = 15.sp,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        maxLines = 1
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                    ) {
                         regions.forEach { region ->
-                            OutlinedButton(onClick = { selectedRegion = region; preferences.edit().putString("travel_region", selectedRegion).apply(); showRegionDialog = false }, modifier = Modifier.fillMaxWidth().heightIn(min = 32.dp), contentPadding = PaddingValues(horizontal = 5.dp, vertical = 3.dp), shape = RoundedCornerShape(22.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF14263D)), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF8796A5))) {
-                                Text(if (french) when (region) { "British Columbia" -> "Colombie-Britannique"; "Quebec" -> "Québec"; "New Brunswick" -> "Nouveau-Brunswick"; "Nova Scotia" -> "Nouvelle-Écosse"; "Prince Edward Island" -> "Île-du-Prince-Édouard"; "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"; "Northwest Territories" -> "Territoires du Nord-Ouest"; else -> region } else region, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                            Box(
+                                modifier = Modifier.fillMaxWidth(0.61f).height(28.dp).clickable {
+                                    selectedRegion = region
+                                    preferences.edit().putString("travel_region", selectedRegion).apply()
+                                    showRegionDialog = false
+                                },
+                                contentAlignment = androidx.compose.ui.Alignment.Center
+                            ) {
+                                Text(
+                                    if (french) when (region) {
+                                        "British Columbia" -> "Colombie-Britannique"
+                                        "Quebec" -> "Québec"
+                                        "New Brunswick" -> "Nouveau-Brunswick"
+                                        "Nova Scotia" -> "Nouvelle-Écosse"
+                                        "Prince Edward Island" -> "Île-du-Prince-Édouard"
+                                        "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
+                                        "Northwest Territories" -> "Territoires du Nord-Ouest"
+                                        else -> region
+                                    } else region,
+                                    color = Color(0xFF14263D),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    maxLines = 1
+                                )
                             }
                         }
                     }
-                    if (selectedRegion.isNotBlank()) TextButton(onClick = { showRegionDialog = false }) { Text(if (french) "Fermer" else "Close", color = Color(0xFF14263D)) }
                 }
             }
         }
