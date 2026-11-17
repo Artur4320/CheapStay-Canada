@@ -66,7 +66,7 @@ internal fun VictoriaTransitSearchCard(
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                if (french) "Horaires d’autobus BC Transit · Victoria" else "BC Transit bus schedules · Victoria",
+                if (french) "Horaires d’autobus BC Transit · $systemTitle" else "BC Transit bus schedules · $systemTitle",
                 style = MaterialTheme.typography.titleMedium
             )
             Button(
@@ -80,8 +80,8 @@ internal fun VictoriaTransitSearchCard(
                     departures = emptyList()
                     if (from == null || to == null) {
                         message = if (french)
-                            "La recherche est actuellement configurée pour Victoria et les communautés voisines indiquées."
-                        else "Local search currently supports Victoria and the listed nearby Greater Victoria communities."
+                            "Ville non prise en charge. Essayez Victoria, Duncan, Ladysmith, Chemainus ou une communauté de la vallée de Cowichan."
+                        else "City not supported yet. Try Victoria, Duncan, Ladysmith, Chemainus or another listed Cowichan Valley community."
                     } else {
                         loading = true
                         message = if (french) "Téléchargement des horaires…" else "Downloading timetable…"
@@ -90,9 +90,15 @@ internal fun VictoriaTransitSearchCard(
                             if (result.isSuccess) {
                                 originStops = repository.searchStopsNear(from.first, from.second)
                                 destinationStops = repository.searchStopsNear(to.first, to.second)
-                                message = if (originStops.isEmpty() || destinationStops.isEmpty())
-                                    (if (french) "Aucun arrêt trouvé près d’une des villes." else "No stops found near one of the cities.")
-                                else (if (french) "Choisissez les arrêts de départ et d’arrivée." else "Choose your origin and destination stops.")
+                                message = if (originStops.isEmpty() || destinationStops.isEmpty()) {
+                                    if (cowichanFeed && (origin.equals("Victoria", true) || destination.equals("Victoria", true))) {
+                                        if (french) "Le flux Cowichan ne fournit pas d’arrêt à Victoria. Les trajets avec correspondance entre réseaux ne sont pas encore disponibles."
+                                        else "The Cowichan feed has no stop in Victoria. Trips requiring a transfer between transit systems are not supported yet."
+                                    } else {
+                                        if (french) "Aucun arrêt trouvé près d’une des villes dans le flux sélectionné."
+                                        else "No stops found near one of the cities in the selected transit feed."
+                                    }
+                                } else (if (french) "Choisissez les arrêts de départ et d’arrivée." else "Choose your origin and destination stops.")
                             } else {
                                 message = if (french) "Échec du téléchargement. Vérifiez votre connexion." else "Download failed. Check your connection."
                             }
