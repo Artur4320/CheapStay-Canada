@@ -66,21 +66,39 @@ private fun suggestedTransportModes(
     originRegion: String,
     destinationRegion: String
 ): List<String> {
-    val islandPlaces = listOf(
+    val from = origin.lowercase(Locale.ROOT)
+    val to = destination.lowercase(Locale.ROOT)
+    val gulfIslandPlaces = listOf(
         "saturna", "pender", "mayne", "gulf island", "salt spring",
         "galiano", "gabriola", "denman", "hornby", "cortes", "quadra"
     )
-    val from = origin.lowercase(Locale.ROOT)
-    val to = destination.lowercase(Locale.ROOT)
-    val involvesIsland = islandPlaces.any { from.contains(it) || to.contains(it) }
+    val vancouverIslandPlaces = listOf(
+        "victoria", "duncan", "nanaimo", "ladysmith", "parksville",
+        "qualicum", "courtenay", "comox", "campbell river", "port alberni",
+        "tofino", "ucluelet", "sidney", "sooke", "langford", "esquimalt",
+        "chem ainus", "chemainus", "lake cowichan"
+    )
+    val fromGulfIsland = gulfIslandPlaces.any { from.contains(it) }
+    val toGulfIsland = gulfIslandPlaces.any { to.contains(it) }
+    val fromVancouverIsland = vancouverIslandPlaces.any { from.contains(it) }
+    val toVancouverIsland = vancouverIslandPlaces.any { to.contains(it) }
     val victoriaToVancouver = (from.contains("victoria") && to.contains("vancouver")) ||
         (from.contains("vancouver") && to.contains("victoria"))
-    return when {
-        originRegion != destinationRegion -> listOf("Flight", "Bus", "Car")
-        involvesIsland || victoriaToVancouver -> listOf("Ferry", "Bus", "Car") +
-            if (victoriaToVancouver) listOf("Flight") else emptyList()
-        else -> listOf("Bus", "Car")
-    }
+    val modes = mutableListOf<String>()
+
+    // A ferry is suggested only when the endpoints imply a water crossing.
+    if (fromGulfIsland || toGulfIsland ||
+        (fromVancouverIsland && !toVancouverIsland) ||
+        (toVancouverIsland && !fromVancouverIsland)
+    ) modes += "Ferry"
+
+    // Bus and car are the ordinary land options for intercity routes.
+    modes += listOf("Bus", "Car")
+
+    // The Victoria–Vancouver corridor also has scheduled air service.
+    if (victoriaToVancouver || originRegion != destinationRegion) modes += "Flight"
+
+    return modes.distinct()
 }
 
 class MainActivity : ComponentActivity() {
@@ -800,23 +818,46 @@ fun EasyWayApp() {
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(if (french) "Options adaptées à votre trajet" else "Suggested transport options",
+                            Text(if (french) "Transports possibles pour ce trajet" else "Transport available for this trip",
                                 style = MaterialTheme.typography.titleLarge)
-                            Text(if (french) "Seuls les moyens pertinents pour cet itinéraire sont affichés." else "Only transport types that may fit this route are shown.",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                if (french) "EasyWay a sélectionné automatiquement les moyens de transport adaptés à votre itinéraire."
+                                else "EasyWay automatically selected the transport types that fit this route.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 routeTransportOptions.forEach { mode ->
-                                    FilterChip(selected = mode in selectedTransport, onClick = {
-                                        if (mode in selectedTransport) selectedTransport.remove(mode)
-                                        else selectedTransport.add(mode)
-                                    }, label = { Text(mode) })
+                                    val symbol = when (mode) {
+                                        "Bus" -> "🚌"
+                                        "Car" -> "🚗"
+                                        "Ferry" -> "⛴️"
+                                        "Flight" -> "✈️"
+                                        else -> "🚆"
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(18.dp),
+                                        color = Color.White.copy(alpha = 0.72f),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF183653))
+                                    ) {
+                                        Row(
+                                            Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(symbol, style = MaterialTheme.typography.titleMedium)
+                                            Text(mode, color = Color(0xFF14263D),
+                                                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                                        }
+                                    }
                                 }
                             }
-                            Text(if (french) "Prix" else "Price", style = MaterialTheme.typography.titleMedium)
-                            Text(if (french) "Aucune limite · Afficher tous les prix disponibles" else "No limit · Show all available prices",
-                                color = Color.Black)
-                            Text(if (french) "Le coût total et le prix de chaque étape seront affichés." else "Total trip cost and each leg's price will be shown.")
+                            Text(
+                                if (french) "Les horaires et les prix seront affichés lorsqu’une source fiable est disponible."
+                                else "Schedules and prices will be shown when reliable source data is available.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                     Button(onClick = { showSearchInfo = true }, modifier = Modifier.fillMaxWidth(),
