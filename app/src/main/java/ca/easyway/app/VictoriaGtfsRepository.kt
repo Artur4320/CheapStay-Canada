@@ -17,12 +17,9 @@ import java.util.zip.ZipInputStream
  * Source: BC Transit Open Data. Data is supplied as-is; refresh before relying
  * on a journey because the publisher may replace the feed without notice.
  */
-internal class VictoriaGtfsRepository(context: Context) {
+internal class VictoriaGtfsRepository(context: Context, private val operatorId: Int = 48) {
     companion object {
-        const val SOURCE_URL =
-            "https://bct.tmix.se/Tmix.Cap.TdExport.WebApi/gtfs/?operatorIds=48"
         const val SOURCE_NAME = "BC Transit"
-        private const val DB_NAME = "victoria_gtfs.db"
         private const val DB_VERSION = 1
         private val TABLES = mapOf("agency.txt" to "agency", "routes.txt" to "routes", "stops.txt" to "stops", "trips.txt" to "trips", "calendar_dates.txt" to "calendar_dates", "stop_times.txt" to "stop_times", "shapes.txt" to "shapes", "feed_info.txt" to "feed_info")
         private val COLUMNS = mapOf(
@@ -37,7 +34,8 @@ internal class VictoriaGtfsRepository(context: Context) {
         )
     }
 
-    private val helper = GtfsDbHelper(context.applicationContext)
+    private val sourceUrl = "https://bct.tmix.se/Tmix.Cap.TdExport.WebApi/gtfs/?operatorIds=$operatorId"
+    private val helper = GtfsDbHelper(context.applicationContext, "bctransit_${operatorId}_gtfs.db")
 
     data class DirectDeparture(
         val routeShortName: String,
@@ -79,7 +77,7 @@ internal class VictoriaGtfsRepository(context: Context) {
 
     suspend fun downloadAndImport(): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
-            val connection = (URL(SOURCE_URL).openConnection() as HttpURLConnection).apply {
+            val connection = (URL(sourceUrl).openConnection() as HttpURLConnection).apply {
                 connectTimeout = 30_000
                 readTimeout = 90_000
                 requestMethod = "GET"
@@ -265,8 +263,8 @@ internal class VictoriaGtfsRepository(context: Context) {
         db.execSQL("CREATE INDEX IF NOT EXISTS idx_stops_name ON stops(stop_name)")
     }
 
-    private class GtfsDbHelper(context: Context) :
-        SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
+    private class GtfsDbHelper(context: Context, databaseName: String) :
+        SQLiteOpenHelper(context, databaseName, null, DB_VERSION) {
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL("CREATE TABLE agency(agency_id TEXT, agency_name TEXT, agency_url TEXT, agency_timezone TEXT, agency_lang TEXT, agency_phone TEXT, agency_fare_url TEXT, agency_email TEXT)")
             db.execSQL("CREATE TABLE routes(route_id TEXT PRIMARY KEY, route_short_name TEXT, route_long_name TEXT, route_type INTEGER, route_color TEXT, route_text_color TEXT)")
