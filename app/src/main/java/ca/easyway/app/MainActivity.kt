@@ -36,6 +36,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.viewinterop.AndroidView
+import android.view.ViewGroup
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
+import kotlinx.coroutines.launch
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+import org.json.JSONObject
 import java.time.Instant
 import java.util.concurrent.Executors
 import android.os.Handler
@@ -626,28 +639,15 @@ fun EasyWayApp() {
                     }
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(if (french) "Aperçu illustré du trajet" else "Illustrated route preview",
+                            Text(if (french) "Carte du trajet" else "Route map",
                                 style = MaterialTheme.typography.titleMedium)
-                            Box(Modifier.fillMaxWidth().height(156.dp).clip(RoundedCornerShape(16.dp))) {
-                                Canvas(Modifier.fillMaxSize()) {
-                                    drawRect(Color(0xFF58B9E8))
-                                    drawCircle(Color(0xFF4E9B63), size.minDimension * 0.42f,
-                                        Offset(size.width * 0.08f, size.height * 0.86f))
-                                    drawCircle(Color(0xFF347D54), size.minDimension * 0.36f,
-                                        Offset(size.width * 0.92f, size.height * 0.84f))
-                                    drawLine(Color.White, Offset(size.width * 0.18f, size.height * 0.72f),
-                                        Offset(size.width * 0.82f, size.height * 0.34f), strokeWidth = 5.dp.toPx())
-                                    drawCircle(Color(0xFFFFC857), 9.dp.toPx(), Offset(size.width * 0.18f, size.height * 0.72f))
-                                    drawCircle(Color(0xFFFFC857), 9.dp.toPx(), Offset(size.width * 0.82f, size.height * 0.34f))
-                                }
-                                Row(Modifier.fillMaxSize().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
-                                    Text("📍 $origin", color = Color.White, style = MaterialTheme.typography.labelLarge)
-                                    Text("🚢 ✈️", color = Color.White, style = MaterialTheme.typography.headlineSmall)
-                                    Text("$destination 📍", color = Color.White, style = MaterialTheme.typography.labelLarge)
-                                }
-                            }
-                            Text(if (french) "Illustration indicative, pas une carte de navigation." else "Illustrative preview — not a navigation map.",
+                            OpenStreetMapRoutePreview(
+                                origin = origin,
+                                destination = destination,
+                                french = french,
+                                modifier = Modifier.fillMaxWidth().height(260.dp)
+                            )
+                            Text(if (french) "Carte OpenStreetMap · Tracé routier indicatif" else "OpenStreetMap · Indicative road route",
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -782,6 +782,142 @@ fun EasyWayApp() {
 }
 
 
+
+
+private data class RouteMapPoint(val latitude: Double, val longitude: Double)
+
+private suspend fun geocodeMapPlace(place: String): RouteMapPoint? = withContext(Dispatchers.IO) {
+    try {
+        val query = URLEncoder.encode("$place, British Columbia, Canada", "UTF-8")
+        val connection = (URL("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=$query")
+            .openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10000
+            readTimeout = 10000
+            setRequestProperty("User-Agent", "EasyWayCanada/1.0 (Android travel planner)")
+        }
+        val body = connection.inputStream.bufferedReader().use { it.readText() }
+        connection.disconnect()
+        val result = org.json.JSONArray(body)
+        if (result.length() == 0) null else {
+            val item = result.getJSONObject(0)
+            RouteMapPoint(item.getDouble("lat"), item.getDouble("lon"))
+        }
+    } catch (_: Exception) { null }
+}
+
+private suspend fun fetchRoadRoute(start: RouteMapPoint, end: RouteMapPoint): List<GeoPoint> =
+    withContext(Dispatchers.IO) {
+        try {
+            val url = "https://router.project-osrm.org/route/v1/driving/" +
+                "${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson"
+            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 15000
+                readTimeout = 15000
+                setRequestProperty("User-Agent", "EasyWayCanada/1.0")
+            }
+            val body = connection.inputStream.bufferedReader().use { it.readText() }
+            connection.disconnect()
+            val routes = JSONObject(body).getJSONArray("routes")
+            if (routes.length() == 0) emptyList() else {
+                val coordinates = routes.getJSONObject(0).getJSONObject("geometry").getJSONArray("coordinates")
+                (0 until coordinates.length()).map { index ->
+                    val pair = coordinates.getJSONArray(index)
+                    GeoPoint(pair.getDouble(1), pair.getDouble(0))
+                }
+            }
+        } catch (_: Exception) { emptyList() }
+    }
+
+@Composable
+private fun OpenStreetMapRoutePreview(
+    origin: String,
+    destination: String,
+    french: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    var mapStatus by remember(origin, destination) {
+        mutableStateOf(if (french) "Chargement de la carte…" else "Loading map…")
+    }
+    var routePoints by remember(origin, destination) { mutableStateOf(emptyList<GeoPoint>()) }
+    var startPoint by remember(origin, destination) { mutableStateOf<RouteMapPoint?>(null) }
+    var endPoint by remember(origin, destination) { mutableStateOf<RouteMapPoint?>(null) }
+
+    LaunchedEffect(origin, destination) {
+        mapStatus = if (french) "Recherche des lieux…" else "Finding locations…"
+        val start = geocodeMapPlace(origin)
+        kotlinx.coroutines.delay(1100)
+        val end = geocodeMapPlace(destination)
+        startPoint = start
+        endPoint = end
+        if (start == null || end == null) {
+            mapStatus = if (french) "Impossible de trouver les deux lieux." else "Could not locate both places."
+            routePoints = emptyList()
+        } else {
+            mapStatus = if (french) "Calcul de l’itinéraire…" else "Calculating road route…"
+            routePoints = fetchRoadRoute(start, end)
+            mapStatus = if (routePoints.isEmpty()) {
+                if (french) "Carte chargée · tracé routier indisponible." else "Map loaded · road route unavailable."
+            } else ""
+        }
+    }
+
+    AndroidView(
+        modifier = modifier.clip(RoundedCornerShape(16.dp)),
+        factory = { ctx ->
+            Configuration.getInstance().userAgentValue = "EasyWayCanada/1.0"
+            MapView(ctx).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                controller.setZoom(8.0)
+                controller.setCenter(GeoPoint(48.5, -123.5))
+            }
+        },
+        update = { map ->
+            map.overlays.clear()
+            val start = startPoint
+            val end = endPoint
+            if (start != null && end != null) {
+                if (routePoints.isNotEmpty()) {
+                    val line = Polyline().apply {
+                        setPoints(routePoints)
+                        outlinePaint.color = android.graphics.Color.rgb(25, 105, 190)
+                        outlinePaint.strokeWidth = 8f
+                    }
+                    map.overlays.add(line)
+                }
+                val startMarker = Marker(map).apply {
+                    position = GeoPoint(start.latitude, start.longitude)
+                    title = origin
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                }
+                val endMarker = Marker(map).apply {
+                    position = GeoPoint(end.latitude, end.longitude)
+                    title = destination
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                }
+                map.overlays.add(startMarker)
+                map.overlays.add(endMarker)
+                val boundsPoints = if (routePoints.isNotEmpty()) routePoints else listOf(
+                    GeoPoint(start.latitude, start.longitude), GeoPoint(end.latitude, end.longitude)
+                )
+                map.post {
+                    map.zoomToBoundingBox(org.osmdroid.util.BoundingBox.fromGeoPoints(boundsPoints), true, 48)
+                }
+            }
+            map.invalidate()
+        }
+    )
+    if (mapStatus.isNotBlank()) {
+        Text(mapStatus, modifier = Modifier.padding(vertical = 4.dp),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
 @Composable
 private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
