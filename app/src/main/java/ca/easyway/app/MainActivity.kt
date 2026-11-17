@@ -631,14 +631,78 @@ fun EasyWayApp() {
                     }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.70f)),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF183653)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(if (french) "Votre trajet" else "Your trip", style = MaterialTheme.typography.titleMedium)
-                            Text("$origin, ${if (selectedRegion == "British Columbia") "BC" else selectedRegion} → $destination, ${if (destinationRegion == "British Columbia") "BC" else destinationRegion}")
-                            Text(if (french) "Départ : $travelDate" else "Departure: $travelDate",
-                                color = Color.Black)
+                        Column(
+                            Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 15.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                                    Text("✦", color = Color(0xFFB58A3A), style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        if (french) "VOTRE VOYAGE" else "YOUR TRIP",
+                                        color = Color(0xFF183653),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        letterSpacing = 1.2.sp
+                                    )
+                                }
+                                Text("CANADA", color = Color(0xFF9A2630),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    letterSpacing = 1.4.sp)
+                            }
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(if (french) "DÉPART" else "FROM",
+                                        color = Color(0xFF66788A), style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                                    Text("$origin, ${if (selectedRegion == "British Columbia") "BC" else selectedRegion}",
+                                        color = Color(0xFF101828), style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        maxLines = 1)
+                                }
+                                Text("→", color = Color(0xFFB58A3A),
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                Column(Modifier.weight(1f)) {
+                                    Text(if (french) "DESTINATION" else "TO",
+                                        color = Color(0xFF66788A), style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                                    Text("$destination, ${if (destinationRegion == "British Columbia") "BC" else destinationRegion}",
+                                        color = Color(0xFF101828), style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        maxLines = 1)
+                                }
+                            }
+                            Box(
+                                Modifier.fillMaxWidth()
+                                    .background(Color(0xFFEAF1F7).copy(alpha = 0.82f), RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("◷", color = Color(0xFF183653), style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        if (french) "Départ : $travelDate" else "Departure: $travelDate",
+                                        color = Color(0xFF183653), style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                    )
+                                }
+                            }
                         }
                     }
                     Card(
