@@ -636,7 +636,7 @@ fun EasyWayApp() {
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(if (french) "Votre trajet" else "Your trip", style = MaterialTheme.typography.titleMedium)
-                            Text("$origin, $selectedRegion → $destination, $destinationRegion")
+                            Text("$origin, ${if (selectedRegion == "British Columbia") "BC" else selectedRegion} → $destination, ${if (destinationRegion == "British Columbia") "BC" else destinationRegion}")
                             Text(if (french) "Départ : $travelDate" else "Departure: $travelDate",
                                 color = Color.Black)
                         }
