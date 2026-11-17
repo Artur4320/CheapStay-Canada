@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.animation.animateContentSize
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
@@ -732,22 +735,63 @@ fun EasyWayApp() {
                             }
                         }
                     }
+                    var routeMapExpanded by remember { mutableStateOf(false) }
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().animateContentSize(),
                         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
                     ) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(if (french) "Carte du trajet" else "Route map",
-                                style = MaterialTheme.typography.titleMedium)
-                            OpenStreetMapRoutePreview(
-                                origin = origin,
-                                destination = destination,
-                                french = french,
-                                modifier = Modifier.fillMaxWidth().height(260.dp)
-                            )
-                            Text(if (french) "© OpenStreetMap contributors · Itinéraire indicatif" else "© OpenStreetMap contributors · Indicative route",
-                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            var verticalDrag by remember { mutableFloatStateOf(0f) }
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                                    .pointerInput(routeMapExpanded) {
+                                        detectVerticalDragGestures(
+                                            onVerticalDrag = { change, dragAmount ->
+                                                verticalDrag += dragAmount
+                                                change.consume()
+                                            },
+                                            onDragEnd = {
+                                                if (verticalDrag > 35f) routeMapExpanded = true
+                                                else if (verticalDrag < -35f) routeMapExpanded = false
+                                                verticalDrag = 0f
+                                            },
+                                            onDragCancel = { verticalDrag = 0f }
+                                        )
+                                    }
+                                    .clickable { routeMapExpanded = !routeMapExpanded }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(if (french) "Carte du trajet" else "Route map",
+                                        style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        if (routeMapExpanded) {
+                                            if (french) "Glissez vers le haut pour fermer" else "Swipe up to collapse"
+                                        } else {
+                                            if (french) "Glissez vers le bas pour ouvrir" else "Swipe down to expand"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Text(if (routeMapExpanded) "⌃" else "⌄",
+                                    color = Color(0xFF183653),
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            }
+                            if (routeMapExpanded) {
+                                OpenStreetMapRoutePreview(
+                                    origin = origin,
+                                    destination = destination,
+                                    french = french,
+                                    modifier = Modifier.fillMaxWidth().height(260.dp)
+                                )
+                                Text(if (french) "© OpenStreetMap contributors · Itinéraire indicatif" else "© OpenStreetMap contributors · Indicative route",
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                     }
                     Card(
