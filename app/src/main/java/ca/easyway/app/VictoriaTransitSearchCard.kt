@@ -30,8 +30,8 @@ internal fun VictoriaTransitSearchCard(
     french: Boolean
 ) {
     val context = LocalContext.current
-    val repository = remember(context) { VictoriaGtfsRepository(context) }
     val scope = rememberCoroutineScope()
+    val cowichanCities = setOf("Duncan", "Ladysmith", "Chemainus", "Lake Cowichan", "Mill Bay", "Shawnigan Lake", "Cobble Hill")
     val cityCoordinates = remember {
         mapOf(
             "Victoria" to (48.4284 to -123.3656),
@@ -41,9 +41,20 @@ internal fun VictoriaTransitSearchCard(
             "Esquimalt" to (48.4320 to -123.4140),
             "Oak Bay" to (48.4260 to -123.3030),
             "Colwood" to (48.4230 to -123.4850),
-            "View Royal" to (48.4510 to -123.4300)
+            "View Royal" to (48.4510 to -123.4300),
+            "Duncan" to (48.7787 to -123.7079),
+            "Ladysmith" to (48.9900 to -123.8160),
+            "Chemainus" to (48.9290 to -123.7190),
+            "Lake Cowichan" to (48.8240 to -124.0540),
+            "Mill Bay" to (48.6500 to -123.5620),
+            "Shawnigan Lake" to (48.6520 to -123.6260),
+            "Cobble Hill" to (48.6860 to -123.6020)
         )
     }
+    val cowichanFeed = origin in cowichanCities || destination in cowichanCities
+    val operatorId = if (cowichanFeed) 10 else 48
+    val systemTitle = if (cowichanFeed) "Cowichan Valley" else "Victoria"
+    val repository = remember(context, operatorId) { VictoriaGtfsRepository(context, operatorId) }
     var loading by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
     var originStops by remember { mutableStateOf(emptyList<VictoriaGtfsRepository.NearbyStop>()) }
