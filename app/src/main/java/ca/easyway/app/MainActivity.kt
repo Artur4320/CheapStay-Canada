@@ -22,10 +22,12 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.animation.animateContentSize
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.rememberScrollState
