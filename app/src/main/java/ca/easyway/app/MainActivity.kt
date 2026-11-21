@@ -376,7 +376,7 @@ fun EasyWayApp() {
                     Card(
                         Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.76f))
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.42f))
                     ) {
                         Box(Modifier.fillMaxWidth()) {
                             if (selectedRegion == "British Columbia") {
@@ -392,7 +392,7 @@ fun EasyWayApp() {
                                 color = Color(0xFF101828)
                             )
                             Card(
-                                Modifier.fillMaxWidth().height(86.dp).clickable {
+                                Modifier.fillMaxWidth().height(100.dp).clickable {
                                     travelOutsideRegion = false
                                     destinationRegion = selectedRegion
                                 },
@@ -402,7 +402,7 @@ fun EasyWayApp() {
                                     if (!travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
                                 ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.82f) else Color.White.copy(alpha = 0.68f)
+                                    containerColor = if (!travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.42f) else Color.White.copy(alpha = 0.42f)
                                 )
                             ) {
                                 Row(
@@ -432,7 +432,7 @@ fun EasyWayApp() {
                                     if (travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
                                 ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.82f) else Color.White.copy(alpha = 0.68f)
+                                    containerColor = if (travelOutsideRegion) Color(0xFFEAF2FF).copy(alpha = 0.42f) else Color.White.copy(alpha = 0.42f)
                                 )
                             ) {
                                 Row(
