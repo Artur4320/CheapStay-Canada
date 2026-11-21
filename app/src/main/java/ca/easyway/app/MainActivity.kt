@@ -948,6 +948,10 @@ fun EasyWayApp() {
                     modifier = Modifier.matchParentSize(),
                     contentScale = ContentScale.FillBounds
                 )
+                // Subtle decorative side motifs; keep the center column clear.
+                RegionDialogOrnaments(
+                    modifier = Modifier.matchParentSize().alpha(0.24f)
+                )
                 Column(
                     modifier = Modifier.fillMaxSize().padding(start = 18.dp, end = 18.dp, top = 58.dp, bottom = 112.dp),
                     horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
@@ -1484,6 +1488,35 @@ private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
                     fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold
                 )
             )
+        }
+    }
+}
+@Composable
+private fun RegionDialogOrnaments(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val ink = Color(0xFF9A6845)
+        val w = size.width
+        val h = size.height
+        val stroke = 1.2.dp.toPx()
+        fun diamond(cx: Float, cy: Float, r: Float) {
+            val p = androidx.compose.ui.graphics.Path().apply {
+                moveTo(cx, cy-r); lineTo(cx+r, cy); lineTo(cx, cy+r); lineTo(cx-r, cy); close()
+            }
+            drawPath(p, ink, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+            drawCircle(ink, 1.5.dp.toPx(), Offset(cx,cy))
+        }
+        // Small motifs confined to the outer margins of the tall dialog.
+        for (side in 0..1) {
+            val x = if (side == 0) w * 0.10f else w * 0.90f
+            val inward = if (side == 0) 1f else -1f
+            for (i in 0..3) {
+                val y = h * (0.23f + i * 0.18f)
+                diamond(x, y, 7.dp.toPx())
+                drawLine(ink, Offset(x, y-13.dp.toPx()), Offset(x, y-23.dp.toPx()), stroke)
+                drawLine(ink, Offset(x, y+13.dp.toPx()), Offset(x, y+23.dp.toPx()), stroke)
+                drawLine(ink, Offset(x, y), Offset(x+inward*12.dp.toPx(), y-8.dp.toPx()), stroke)
+                drawLine(ink, Offset(x, y), Offset(x+inward*12.dp.toPx(), y+8.dp.toPx()), stroke)
+            }
         }
     }
 }
