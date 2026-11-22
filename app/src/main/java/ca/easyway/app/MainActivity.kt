@@ -939,15 +939,23 @@ fun EasyWayApp() {
     if (showRegionDialog) {
         val regions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
         Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
-            Box(
+            val provinceFramePainter = try {
+            painterResource(id = R.drawable.canada_province_frame)
+        } catch (_: Exception) {
+            null
+        }
+        Box(
                 Modifier.fillMaxWidth().widthIn(max = 420.dp).aspectRatio(0.75f)
+                    .background(Color(0xFFEAF2F8))
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.canada_province_frame),
-                    contentDescription = null,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds
-                )
+                if (provinceFramePainter != null) {
+                    Image(
+                        painter = provinceFramePainter,
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
                 // Subtle decorative side motifs; keep the center column clear.
                 RegionDialogOrnaments(
                     modifier = Modifier.matchParentSize().alpha(0.24f)
