@@ -319,7 +319,8 @@ fun EasyWayApp() {
             .filterNot { it.equals(query, ignoreCase = true) }
     }
     var currentPage by remember { mutableIntStateOf(0) }
-    var travelDate by remember { mutableStateOf("") }
+    var travelDate by remember { mutableStateOf(LocalDate.now().toString()) }
+    var departureMode by remember { mutableStateOf("NOW") }
     var showDatePicker by remember { mutableStateOf(false) }
     var travellers by remember { mutableIntStateOf(1) }
     var rooms by remember { mutableIntStateOf(1) }
@@ -578,8 +579,29 @@ fun EasyWayApp() {
                                     }
                                 }
                             }
-                            OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                                Text(if (travelDate.isBlank()) { if (french) "Date de départ · Choisir" else "When · Choose departure date" } else { if (french) "Départ · $travelDate" else "Departure · $travelDate" })
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                listOf("NOW", "TODAY", "DATE").forEach { mode ->
+                                    val active = departureMode == mode
+                                    Surface(
+                                        modifier = Modifier.weight(1f).clickable {
+                                            departureMode = mode
+                                            if (mode != "DATE") travelDate = LocalDate.now().toString() else showDatePicker = true
+                                        },
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = if (active) Color(0xFFBFEAFF) else Color.White.copy(alpha = 0.38f),
+                                        border = androidx.compose.foundation.BorderStroke(if (active) 2.dp else 1.dp, if (active) Color(0xFF4BBCE8) else Color(0xFF9AA9B8)
+                                    ) {
+                                        Column(Modifier.padding(vertical = 9.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                                            Text(mode, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = Color(0xFF12385C))
+                                            Text(if (mode == "NOW") (if (french) "Maintenant" else "Leave now") else if (mode == "TODAY") (if (french) "Aujourd’hui" else "Today") else (if (french) "Choisir" else "Choose date"), style = MaterialTheme.typography.labelSmall, color = Color(0xFF34516D))
+                                        }
+                                    }
+                                }
+                            }
+                            if (departureMode == "DATE") {
+                                OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
+                                    Text(if (french) "Départ · $travelDate" else "Departure · $travelDate")
+                                }
                             }
                         }
                     }
@@ -758,10 +780,11 @@ fun EasyWayApp() {
                     var routeMapExpanded by remember { mutableStateOf(false) }
                     Card(
                         modifier = Modifier.fillMaxWidth().animateContentSize(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.58f)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.60f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF8CA9C0))
                     ) {
-                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             var verticalDrag by remember { mutableFloatStateOf(0f) }
                             Row(
                                 modifier = Modifier.fillMaxWidth()
@@ -784,23 +807,16 @@ fun EasyWayApp() {
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(if (french) "Carte du trajet" else "Route map",
-                                        style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        if (routeMapExpanded) {
-                                            if (french) "Glissez vers le haut pour fermer" else "Swipe up to collapse"
-                                        } else {
-                                            if (french) "Glissez vers le bas pour ouvrir" else "Swipe down to expand"
-                                        },
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                if (routeMapExpanded) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(if (french) "Carte du trajet" else "Route map", style = MaterialTheme.typography.titleMedium)
+                                        Text(if (french) "Glissez vers le haut" else "Swipe up to collapse", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                    Text("⌃", color = Color(0xFF183653), style = MaterialTheme.typography.headlineSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                } else {
+                                    CanadaMiniMap(modifier = Modifier.weight(1f).height(54.dp), selectedRegion = selectedRegion)
+                                    Text("⌄", color = Color(0xFF183653), style = MaterialTheme.typography.headlineSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                                 }
-                                Text(if (routeMapExpanded) "⌃" else "⌄",
-                                    color = Color(0xFF183653),
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                             }
                             if (routeMapExpanded) {
                                 OpenStreetMapRoutePreview(
@@ -929,9 +945,6 @@ fun EasyWayApp() {
                         Text(if (french) "Enregistrer" else "Save preferences")
                     }
                 }
-                    Text(if (french) "Le Canada d’abord · D’autres destinations suivront" else "Canada first · More destinations can come later",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -1435,6 +1448,44 @@ private fun ProvinceFlag(region: String) {
             else -> drawRect(blue)
         }
         drawRect(Color(0xFF222222), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.7.dp.toPx()))
+    }
+}
+
+@Composable
+private fun CanadaMiniMap(modifier: Modifier = Modifier, selectedRegion: String) {
+    Canvas(modifier) {
+        val base = Color(0xFF9CB4C8)
+        val accent = Color(0xFF24C6BC)
+        val muted = Color(0xFF547B9B)
+        // Simplified, stylized Canada silhouette as a compact visual cue.
+        val p = androidx.compose.ui.graphics.Path().apply {
+            moveTo(size.width*.08f,size.height*.55f); lineTo(size.width*.14f,size.height*.25f)
+            lineTo(size.width*.23f,size.height*.12f); lineTo(size.width*.30f,size.height*.25f)
+            lineTo(size.width*.38f,size.height*.18f); lineTo(size.width*.48f,size.height*.28f)
+            lineTo(size.width*.58f,size.height*.18f); lineTo(size.width*.67f,size.height*.22f)
+            lineTo(size.width*.78f,size.height*.12f); lineTo(size.width*.88f,size.height*.30f)
+            lineTo(size.width*.94f,size.height*.44f); lineTo(size.width*.84f,size.height*.55f)
+            lineTo(size.width*.77f,size.height*.62f); lineTo(size.width*.67f,size.height*.64f)
+            lineTo(size.width*.61f,size.height*.82f); lineTo(size.width*.52f,size.height*.75f)
+            lineTo(size.width*.42f,size.height*.88f); lineTo(size.width*.34f,size.height*.70f)
+            lineTo(size.width*.24f,size.height*.72f); lineTo(size.width*.18f,size.height*.62f); close()
+        }
+        drawPath(p,base.copy(alpha=.35f))
+        drawPath(p,muted,style=androidx.compose.ui.graphics.drawscope.Stroke(1.dp.toPx()))
+        if (selectedRegion == "British Columbia") {
+            val bc = androidx.compose.ui.graphics.Path().apply {
+                moveTo(size.width*.08f,size.height*.55f); lineTo(size.width*.14f,size.height*.25f)
+                lineTo(size.width*.23f,size.height*.12f); lineTo(size.width*.30f,size.height*.25f)
+                lineTo(size.width*.26f,size.height*.48f); lineTo(size.width*.24f,size.height*.72f)
+                lineTo(size.width*.18f,size.height*.62f); close()
+            }
+            drawPath(bc,accent.copy(alpha=.72f))
+        }
+        // province divisions
+        for (i in 1..5) drawLine(muted.copy(alpha=.35f),Offset(size.width*(.25f+i*.10f),size.height*.28f),Offset(size.width*(.25f+i*.10f),size.height*.68f),1.dp.toPx())
+        drawCircle(accent,3.dp.toPx(),Offset(size.width*.16f,size.height*.55f))
+        drawCircle(Color(0xFFECF8FF),2.dp.toPx(),Offset(size.width*.78f,size.height*.53f))
+        drawLine(accent,Offset(size.width*.16f,size.height*.55f),Offset(size.width*.78f,size.height*.53f),2.dp.toPx())
     }
 }
 
