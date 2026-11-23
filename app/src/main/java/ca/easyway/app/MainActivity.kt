@@ -952,9 +952,21 @@ fun EasyWayApp() {
     if (showRegionDialog) {
         val regions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
         Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
+        val dialogShape = RoundedCornerShape(30.dp)
         Box(
                 Modifier.fillMaxWidth().widthIn(max = 420.dp).aspectRatio(0.75f)
-                    .background(Color(0xFFEAF2F8))
+                    .shadow(18.dp, dialogShape)
+                    .clip(dialogShape)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xDDF3F8FF), Color(0xCCE3EEF7), Color(0xD9DDEAF5))
+                        )
+                    )
+                    .border(
+                        1.5.dp,
+                        Brush.linearGradient(listOf(Color(0xFFF7FCFF), Color(0xFF9ED8F0), Color(0xFFEAF7FF))),
+                        dialogShape
+                    )
             ) {
                 // Subtle decorative side motifs; keep the center column clear.
                 RegionDialogOrnaments(
