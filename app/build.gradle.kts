@@ -4,6 +4,14 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 android {
+    val persistentDebugSigning = System.getenv("EASYWAY_KEYSTORE_PATH")?.let { path ->
+        signingConfigs.create("persistentDebug") {
+            storeFile = file(path)
+            storePassword = System.getenv("EASYWAY_STORE_PASSWORD")
+            keyAlias = System.getenv("EASYWAY_KEY_ALIAS")
+            keyPassword = System.getenv("EASYWAY_KEY_PASSWORD")
+        }
+    }
     namespace = "ca.easyway.app"
     compileSdk = 36
     defaultConfig {
@@ -12,6 +20,11 @@ android {
         targetSdk = 36
         versionCode = 10
         versionName = "1.0.0"
+    }
+    buildTypes {
+        getByName("debug") {
+            if (persistentDebugSigning != null) signingConfig = persistentDebugSigning
+        }
     }
     buildFeatures { compose = true }
     compileOptions {
