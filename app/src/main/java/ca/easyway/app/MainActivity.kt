@@ -960,7 +960,7 @@ fun EasyWayApp() {
                     .clip(dialogShape)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xF7F5FAFD), Color(0xF2EAF2F8), Color(0xF6E6EDF5))
+                            listOf(Color(0xFFEEF5FA), Color(0xFFE6EFF7), Color(0xFFDFEAF4))
                         )
                     )
                     .border(
