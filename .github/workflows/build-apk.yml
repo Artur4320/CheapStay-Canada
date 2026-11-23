@@ -8,6 +8,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      EASYWAY_KEYSTORE_BASE64: ${{ secrets.EASYWAY_KEYSTORE_BASE64 }}
+      EASYWAY_STORE_PASSWORD: ${{ secrets.EASYWAY_STORE_PASSWORD }}
+      EASYWAY_KEY_ALIAS: ${{ secrets.EASYWAY_KEY_ALIAS }}
+      EASYWAY_KEY_PASSWORD: ${{ secrets.EASYWAY_KEY_PASSWORD }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -21,17 +26,12 @@ jobs:
         with:
           gradle-version: "8.13"
       - name: Prepare persistent signing (if configured)
-        if: ${{ secrets.EASYWAY_KEYSTORE_BASE64 != '' }}
-        run: echo "$EASYWAY_KEYSTORE_BASE64" | base64 --decode > easyway-keystore.jks
-        env:
-          EASYWAY_KEYSTORE_BASE64: ${{ secrets.EASYWAY_KEYSTORE_BASE64 }}
+        if: env.EASYWAY_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$EASYWAY_KEYSTORE_BASE64" | base64 --decode > easyway-keystore.jks
+          echo "EASYWAY_KEYSTORE_PATH=easyway-keystore.jks" >> "$GITHUB_ENV"
       - name: Build debug APK
         run: gradle assembleDebug
-        env:
-          EASYWAY_KEYSTORE_PATH: ${{ secrets.EASYWAY_KEYSTORE_BASE64 != '' && 'easyway-keystore.jks' || '' }}
-          EASYWAY_STORE_PASSWORD: ${{ secrets.EASYWAY_STORE_PASSWORD }}
-          EASYWAY_KEY_ALIAS: ${{ secrets.EASYWAY_KEY_ALIAS }}
-          EASYWAY_KEY_PASSWORD: ${{ secrets.EASYWAY_KEY_PASSWORD }}
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
