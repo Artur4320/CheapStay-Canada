@@ -589,7 +589,7 @@ fun EasyWayApp() {
                                         },
                                         shape = RoundedCornerShape(14.dp),
                                         color = if (active) Color(0xFFBFEAFF) else Color.White.copy(alpha = 0.38f),
-                                        border = androidx.compose.foundation.BorderStroke(if (active) 2.dp else 1.dp, if (active) Color(0xFF4BBCE8) else Color(0xFF9AA9B8)
+                                        border = androidx.compose.foundation.BorderStroke(if (active) 2.dp else 1.dp, if (active) Color(0xFF4BBCE8) else Color(0xFF9AA9B8))
                                     ) {
                                         Column(Modifier.padding(vertical = 9.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                                             Text(mode, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = Color(0xFF12385C))
