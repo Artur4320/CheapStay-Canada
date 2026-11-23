@@ -18,3 +18,6 @@ This is an early UI prototype. Live schedules, fares, availability, booking link
 
 ## Build
 Run gradle assembleDebug with Android SDK and Java 17 installed.
+
+
+Recent UI iteration: departure-mode selector and compact Canada route-map preview.
