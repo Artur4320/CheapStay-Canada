@@ -397,8 +397,7 @@ fun EasyWayApp() {
                                 Modifier.fillMaxWidth().height(100.dp).clickable {
                                     travelOutsideRegion = false
                                     destinationRegion = selectedRegion
-                                },
-                                shape = RoundedCornerShape(20.dp),
+                                },                                shape = RoundedCornerShape(20.dp),
                                 border = androidx.compose.foundation.BorderStroke(
                                     if (!travelOutsideRegion) 2.dp else 1.dp,
                                     if (!travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
@@ -797,8 +796,7 @@ fun EasyWayApp() {
                                             },
                                             onDragEnd = {
                                                 if (verticalDrag > 35f) routeMapExpanded = true
-                                                else if (verticalDrag < -35f) routeMapExpanded = false
-                                                verticalDrag = 0f
+                                                else if (verticalDrag < -35f) routeMapExpanded = false                                                verticalDrag = 0f
                                             },
                                             onDragCancel = { verticalDrag = 0f }
                                         )
@@ -956,19 +954,31 @@ fun EasyWayApp() {
         val dialogShape = RoundedCornerShape(30.dp)
         Box(
                 Modifier.fillMaxWidth().widthIn(max = 420.dp).aspectRatio(0.75f)
-                    .shadow(18.dp, dialogShape)
+                    .shadow(
+                        24.dp, dialogShape, clip = false,
+                        ambientColor = Color(0xFF65BFEA).copy(alpha = 0.22f),
+                        spotColor = Color(0xFF4BADE8).copy(alpha = 0.32f)
+                    )
                     .clip(dialogShape)
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color(0xD8EEF5FA), Color(0xD8E6EFF7), Color(0xD8DFEAF4))
+                            listOf(Color(0xF2F7FCFF), Color(0xF0EAF4FB), Color(0xF2E4F0F9))
                         )
                     )
                     .border(
-                        1.5.dp,
-                        Brush.linearGradient(listOf(Color(0xFFF7FCFF), Color(0xFF9ED8F0), Color(0xFFEAF7FF))),
+                        2.2.dp,
+                        Brush.linearGradient(listOf(Color(0xFFBDEBFF), Color(0xFF4DA9DE), Color(0xFFDDF5FF))),
                         dialogShape
                     )
             ) {
+                // Frosted panel with stronger Arctic-blue outer frame.
+                RegionDialogOrnaments(
+                    modifier = Modifier.matchParentSize().alpha(0.12f)
+                )
+                Box(
+                    Modifier.matchParentSize().padding(6.dp)
+                        .border(0.8.dp, Color(0xFF8CCDEB).copy(alpha = 0.72f), RoundedCornerShape(25.dp))
+                )
                 // Subtle decorative side motifs; keep the center column clear.
                 RegionDialogOrnaments(
                     modifier = Modifier.matchParentSize().alpha(0.24f)
@@ -1197,8 +1207,7 @@ private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
                 val half = (10 - i * 2).dp.toPx() * scale
                 val p = androidx.compose.ui.graphics.Path().apply {
                     moveTo(xx - half, yy + 12.dp.toPx() * scale)
-                    lineTo(xx, yy)
-                    lineTo(xx + half, yy + 12.dp.toPx() * scale)
+                    lineTo(xx, yy)                    lineTo(xx + half, yy + 12.dp.toPx() * scale)
                 }
                 drawPath(p, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx() * scale))
             }
