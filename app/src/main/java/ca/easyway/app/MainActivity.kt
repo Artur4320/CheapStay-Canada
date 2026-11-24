@@ -348,7 +348,14 @@ fun EasyWayApp() {
     ) {
         Surface(Modifier.fillMaxSize(), color = Color.Transparent) {
             Box(Modifier.fillMaxSize()) {
-                if (selectedRegion == "British Columbia") {
+                if (showRegionDialog) {
+                    Image(
+                        painter = painterResource(id = R.drawable.first_nations_art_background),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else if (selectedRegion == "British Columbia") {
                     Image(
                         painter = painterResource(id = R.drawable.bc_parliament_bg),
                         contentDescription = null,
@@ -360,7 +367,7 @@ fun EasyWayApp() {
                     Box(Modifier.fillMaxSize().background(Color.White))
                 }
                 Column(
-                    Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 20.dp),
+                    Modifier.fillMaxSize().graphicsLayer { alpha = if (showRegionDialog) 0f else 1f }.statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -954,7 +961,7 @@ fun EasyWayApp() {
             val dialogShape = RoundedCornerShape(30.dp)
             val dialogWindow = (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
             SideEffect {
-                dialogWindow?.setDimAmount(0.84f)
+                dialogWindow?.setDimAmount(0.45f)
                 dialogWindow?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             }
             Box(
