@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.viewinterop.AndroidView
 import android.view.ViewGroup
 import org.osmdroid.config.Configuration
@@ -950,79 +951,55 @@ fun EasyWayApp() {
     if (showRegionDialog) {
         val regions = listOf("British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Nova Scotia", "Prince Edward Island", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut")
         Dialog(onDismissRequest = { if (selectedRegion.isNotBlank()) showRegionDialog = false }) {
-        val dialogShape = RoundedCornerShape(30.dp)
-        Box(
+            val dialogShape = RoundedCornerShape(30.dp)
+            val dialogWindow = (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
+            SideEffect {
+                dialogWindow?.setDimAmount(0.84f)
+                dialogWindow?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            }
+            Box(
                 Modifier.fillMaxWidth().widthIn(max = 420.dp).aspectRatio(0.75f)
-                    .shadow(
-                        24.dp, dialogShape, clip = false,
-                        ambientColor = Color(0xFF65BFEA).copy(alpha = 0.22f),
-                        spotColor = Color(0xFF4BADE8).copy(alpha = 0.32f)
-                    )
+                    .shadow(24.dp, dialogShape, clip = false, ambientColor = Color(0xFF65BFEA).copy(alpha = 0.22f), spotColor = Color(0xFF4BADE8).copy(alpha = 0.32f))
                     .clip(dialogShape)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color(0xF2F7FCFF), Color(0xF0EAF4FB), Color(0xF2E4F0F9))
-                        )
-                    )
-                    .border(
-                        2.2.dp,
-                        Brush.linearGradient(listOf(Color(0xFFBDEBFF), Color(0xFF4DA9DE), Color(0xFFDDF5FF))),
-                        dialogShape
-                    )
+                    .background(Brush.verticalGradient(listOf(Color(0xF2F7FCFF), Color(0xF0EAF4FB), Color(0xF2E4F0F9))))
+                    .border(2.2.dp, Brush.linearGradient(listOf(Color(0xFFBDEBFF), Color(0xFF4DA9DE), Color(0xFFDDF5FF))), dialogShape)
             ) {
-                // Frosted panel with stronger Arctic-blue outer frame.
-                RegionDialogOrnaments(
-                    modifier = Modifier.matchParentSize().alpha(0.12f)
-                )
-                Box(
-                    Modifier.matchParentSize().padding(6.dp)
-                        .border(0.8.dp, Color(0xFF8CCDEB).copy(alpha = 0.72f), RoundedCornerShape(25.dp))
-                )
-                // Subtle decorative side motifs; keep the center column clear.
-                RegionDialogOrnaments(
-                    modifier = Modifier.matchParentSize().alpha(0.24f)
-                )
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(start = 18.dp, end = 18.dp, top = 58.dp, bottom = 112.dp),
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        if (french) "Choisissez votre province" else "Choose your province",
-                        color = Color(0xFF14263D),
-                        fontSize = 15.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        maxLines = 1
-                    )
-                    Spacer(Modifier.height(3.dp))
-                    Column(
-                        modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                    ) {
+                RegionDialogOrnaments(modifier = Modifier.matchParentSize().alpha(0.30f))
+                Box(Modifier.matchParentSize().padding(6.dp).border(0.8.dp, Color(0xFF8CCDEB).copy(alpha = 0.72f), RoundedCornerShape(25.dp)))
+                Column(Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 42.dp, bottom = 46.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text(if (french) "Choisissez votre province" else "Choose your province", color = Color(0xFF14263D), fontSize = 15.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, maxLines = 1)
+                    Spacer(Modifier.height(10.dp))
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontely) {
                         regions.forEach { region ->
-                            Box(
-                                modifier = Modifier.fillMaxWidth(0.61f).height(28.dp).clickable {
+                            val isSelected = selectedRegion == region
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(0.70f).height(34.dp).clickable {
                                     selectedRegion = region
                                     preferences.edit().putString("travel_region", selectedRegion).apply()
                                     showRegionDialog = false
                                 },
-                                contentAlignment = androidx.compose.ui.Alignment.Center
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (isSelected) Color(0xFFB8E5FA).copy(alpha = 0.80f) else Color(0xFFDCECF7).copy(alpha = 0.50f),
+                                border = androidx.compose.foundation.BorderStroke(if (isSelected) 1.6.dp else 1.dp, if (isSelected) Color(0xFF4DA9DE) else Color(0xFF9CCFE7).copy(alpha = 0.78f)),
+                                shadowElevation = if (isSelected) 3.dp else 0.dp
                             ) {
-                                Text(
-                                    if (french) when (region) {
-                                        "British Columbia" -> "Colombie-Britannique"
-                                        "Quebec" -> "Québec"
-                                        "New Brunswick" -> "Nouveau-Brunswick"
-                                        "Nova Scotia" -> "Nouvelle-Écosse"
-                                        "Prince Edward Island" -> "Île-du-Prince-Édouard"
-                                        "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
-                                        "Northwest Territories" -> "Territoires du Nord-Ouest"
-                                        else -> region
-                                    } else region,
-                                    color = Color(0xFF14263D),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    maxLines = 1
-                                )
+                                Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                    Text(
+                                        if (french) when (region) {
+                                            "British Columbia" -> "Colombie-Britannique"
+                                            "Quebec" -> "Québec"
+                                            "New Brunswick" -> "Nouveau-Brunswick"
+                                            "Nova Scotia" -> "Nouvelle-Écosse"
+                                            "Prince Edward Island" -> "Île-du-Prince-Édouard"
+                                            "Newfoundland and Labrador" -> "Terre-Neuve-et-Labrador"
+                                            "Northwest Territories" -> "Territoires du Nord-Ouest"
+                                            else -> region
+                                        } else region,
+                                        color = Color(0xFF14263D), style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                        maxLines = 1
+                                    )
+                                }
                             }
                         }
                     }
