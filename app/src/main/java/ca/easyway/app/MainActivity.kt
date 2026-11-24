@@ -969,7 +969,7 @@ fun EasyWayApp() {
                 Column(Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 42.dp, bottom = 46.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                     Text(if (french) "Choisissez votre province" else "Choose your province", color = Color(0xFF14263D), fontSize = 15.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, maxLines = 1)
                     Spacer(Modifier.height(10.dp))
-                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontely) {
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                         regions.forEach { region ->
                             val isSelected = selectedRegion == region
                             Surface(
@@ -1538,29 +1538,60 @@ private fun LanguageFlagButton(language: String, onClick: () -> Unit) {
 @Composable
 private fun RegionDialogOrnaments(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val ink = Color(0xFF9A6845)
+        val ink = Color(0xFF267FAE)
         val w = size.width
         val h = size.height
-        val stroke = 1.2.dp.toPx()
-        fun diamond(cx: Float, cy: Float, r: Float) {
+        val stroke = 1.5.dp.toPx()
+        // Original coastal nature motifs: cedar, salmon and flowing waves.
+        fun cedarBranch(x: Float, y: Float, direction: Float) {
+            val length = 48.dp.toPx()
+            drawLine(ink, Offset(x, y), Offset(x + direction * length, y - length * 0.32f), stroke)
+            for (i in 0..4) {
+                val t = i / 4f
+                val px = x + direction * length * t
+                val py = y - length * 0.32f * t
+                val leafLen = 8.dp.toPx() + (1f - t) * 4.dp.toPx()
+                for (side in listOf(-1f, 1f)) {
+                    val tip = Offset(px + direction * leafLen * 0.5f, py + side * leafLen)
+                    drawLine(ink, Offset(px, py), tip, stroke)
+                    drawLine(ink, tip, Offset(px + direction * leafLen, py + side * leafLen * 0.45f), stroke)
+                }
+            }
+        }
+        fun salmon(cx: Float, cy: Float, scale: Float, flip: Float) {
+            val body = androidx.compose.ui.graphics.Path().apply {
+                moveTo(cx - 18f * scale * flip, cy)
+                cubicTo(cx - 9f * scale * flip, cy - 10f * scale, cx + 7f * scale * flip, cy - 9f * scale, cx + 16f * scale * flip, cy)
+                cubicTo(cx + 7f * scale * flip, cy + 9f * scale, cx - 9f * scale * flip, cy + 10f * scale, cx - 18f * scale * flip, cy)
+                close()
+            }
+            drawPath(body, ink, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+            val tail = androidx.compose.ui.graphics.Path().apply {
+                moveTo(cx - 18f * scale * flip, cy)
+                lineTo(cx - 27f * scale * flip, cy - 8f * scale)
+                lineTo(cx - 24f * scale * flip, cy)
+                lineTo(cx - 27f * scale * flip, cy + 8f * scale)
+                close()
+            }
+            drawPath(tail, ink, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+            drawCircle(ink, 1.5.dp.toPx(), Offset(cx + 11f * scale * flip, cy - 1f * scale))
+            drawLine(ink, Offset(cx - 3f * scale, cy), Offset(cx + 7f * scale, cy), stroke * 0.75f)
+        }
+        fun wave(cx: Float, cy: Float, scale: Float) {
             val p = androidx.compose.ui.graphics.Path().apply {
-                moveTo(cx, cy-r); lineTo(cx+r, cy); lineTo(cx, cy+r); lineTo(cx-r, cy); close()
+                moveTo(cx - 22f * scale, cy)
+                cubicTo(cx - 12f * scale, cy - 10f * scale, cx - 2f * scale, cy + 10f * scale, cx + 8f * scale, cy)
+                cubicTo(cx + 14f * scale, cy - 7f * scale, cx + 20f * scale, cy - 5f * scale, cx + 24f * scale, cy - 2f * scale)
             }
             drawPath(p, ink, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
-            drawCircle(ink, 1.5.dp.toPx(), Offset(cx,cy))
         }
-        // Small motifs confined to the outer margins of the tall dialog.
-        for (side in 0..1) {
-            val x = if (side == 0) w * 0.10f else w * 0.90f
-            val inward = if (side == 0) 1f else -1f
-            for (i in 0..3) {
-                val y = h * (0.23f + i * 0.18f)
-                diamond(x, y, 7.dp.toPx())
-                drawLine(ink, Offset(x, y-13.dp.toPx()), Offset(x, y-23.dp.toPx()), stroke)
-                drawLine(ink, Offset(x, y+13.dp.toPx()), Offset(x, y+23.dp.toPx()), stroke)
-                drawLine(ink, Offset(x, y), Offset(x+inward*12.dp.toPx(), y-8.dp.toPx()), stroke)
-                drawLine(ink, Offset(x, y), Offset(x+inward*12.dp.toPx(), y+8.dp.toPx()), stroke)
-            }
-        }
+        val lx = w * 0.13f
+        val rx = w * 0.87f
+        salmon(lx, h * 0.23f, 0.75f, 1f)
+        cedarBranch(lx - 4.dp.toPx(), h * 0.46f, 1f)
+        wave(lx, h * 0.69f, 0.75f)
+        salmon(rx, h * 0.23f, 0.75f, -1f)
+        cedarBranch(rx + 4.dp.toPx(), h * 0.46f, -1f)
+        wave(rx, h * 0.69f, 0.75f)
     }
 }
