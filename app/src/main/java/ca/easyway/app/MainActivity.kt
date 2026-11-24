@@ -397,8 +397,7 @@ fun EasyWayApp() {
                                 Modifier.fillMaxWidth().height(100.dp).clickable {
                                     travelOutsideRegion = false
                                     destinationRegion = selectedRegion
-                                },                                shape = RoundedCornerShape(20.dp),
-                                border = androidx.compose.foundation.BorderStroke(
+                                },                                shape = RoundedCornerShape(20.dp),                                border = androidx.compose.foundation.BorderStroke(
                                     if (!travelOutsideRegion) 2.dp else 1.dp,
                                     if (!travelOutsideRegion) Color(0xFF1769D2) else Color(0xFFD5D9E0)
                                 ),
@@ -796,9 +795,9 @@ fun EasyWayApp() {
                                             },
                                             onDragEnd = {
                                                 if (verticalDrag > 35f) routeMapExpanded = true
-                                                else if (verticalDrag < -35f) routeMapExpanded = false                                                verticalDrag = 0f
-                                            },
-                                            onDragCancel = { verticalDrag = 0f }
+                                                else if (verticalDrag < -35f) routeMapExpanded = false
+                                                verticalDrag = 0f
+                                            },                                            onDragCancel = { verticalDrag = 0f }
                                         )
                                     }
                                     .clickable { routeMapExpanded = !routeMapExpanded }
@@ -1197,8 +1196,7 @@ private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
         fun line(color: Color, x1: Float, y1: Float, x2: Float, y2: Float, width: Float = stroke) {
             drawLine(color, point(x1, y1), point(x2, y2), width)
         }
-        fun pine(x: Float, y: Float, scale: Float = 1f) {
-            val trunkTop = h * y
+        fun pine(x: Float, y: Float, scale: Float = 1f) {            val trunkTop = h * y
             val trunkBottom = trunkTop + 43.dp.toPx() * scale
             val xx = w * x
             drawLine(navy, Offset(xx, trunkTop), Offset(xx, trunkBottom), 2.dp.toPx() * scale)
@@ -1207,7 +1205,8 @@ private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
                 val half = (10 - i * 2).dp.toPx() * scale
                 val p = androidx.compose.ui.graphics.Path().apply {
                     moveTo(xx - half, yy + 12.dp.toPx() * scale)
-                    lineTo(xx, yy)                    lineTo(xx + half, yy + 12.dp.toPx() * scale)
+                    lineTo(xx, yy)
+                    lineTo(xx + half, yy + 12.dp.toPx() * scale)
                 }
                 drawPath(p, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx() * scale))
             }
