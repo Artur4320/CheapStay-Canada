@@ -1325,39 +1325,71 @@ private fun CanadaDialogArtwork(modifier: Modifier = Modifier) {
 @Composable
 private fun BritishColumbiaCardArtwork(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val navy = Color(0xFF12384A).copy(alpha = 0.42f)
-        val teal = Color(0xFF159B91).copy(alpha = 0.48f)
-        val gold = Color(0xFFC58A32).copy(alpha = 0.55f)
-        val sideInset = 13.dp.toPx()
-        val stroke = 2.dp.toPx()
+        val navy = Color(0xFF12384A).copy(alpha = 0.52f)
+        val teal = Color(0xFF159B91).copy(alpha = 0.62f)
+        val pale = Color(0xFFBCECF2).copy(alpha = 0.72f)
+        val stroke = 1.8.dp.toPx()
+        val inset = 12.dp.toPx()
 
-        // Delicate coastal-inspired flowing forms stay close to the card edges.
-        // The central content area remains clear and fully readable.
+        // Decorative coastal motifs aligned to the card perimeter, leaving the center clear.
+        // These are abstract decorative forms, not traditional/culturally specific symbols.
+        val topWave = Path().apply {
+            moveTo(inset, size.height * 0.11f)
+            cubicTo(size.width * 0.23f, size.height * 0.06f, size.width * 0.33f, size.height * 0.12f, size.width * 0.42f, size.height * 0.10f)
+            cubicTo(size.width * 0.49f, size.height * 0.08f, size.width * 0.51f, size.height * 0.08f, size.width * 0.58f, size.height * 0.10f)
+            cubicTo(size.width * 0.67f, size.height * 0.12f, size.width * 0.77f, size.height * 0.06f, size.width - inset, size.height * 0.11f)
+        }
+        drawPath(topWave, teal, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
+
+        // Corner loops, mirrored for balance.
         for (side in 0..1) {
-            val x = if (side == 0) sideInset else size.width - sideInset
-            val direction = if (side == 0) 1f else -1f
-            val wave = androidx.compose.ui.graphics.Path().apply {
-                moveTo(x, size.height * 0.16f)
-                cubicTo(x + direction * 7.dp.toPx(), size.height * 0.22f,
-                    x - direction * 5.dp.toPx(), size.height * 0.29f, x, size.height * 0.35f)
-                cubicTo(x + direction * 6.dp.toPx(), size.height * 0.42f,
-                    x - direction * 5.dp.toPx(), size.height * 0.49f, x, size.height * 0.56f)
-                cubicTo(x + direction * 7.dp.toPx(), size.height * 0.64f,
-                    x - direction * 4.dp.toPx(), size.height * 0.72f, x, size.height * 0.80f)
+            val x = if (side == 0) inset else size.width - inset
+            val dir = if (side == 0) 1f else -1f
+            val corner = Path().apply {
+                moveTo(x, size.height * 0.12f)
+                cubicTo(x + dir * 14.dp.toPx(), size.height * 0.14f, x + dir * 13.dp.toPx(), size.height * 0.19f, x + dir * 2.dp.toPx(), size.height * 0.22f)
+                cubicTo(x + dir * 11.dp.toPx(), size.height * 0.24f, x + dir * 11.dp.toPx(), size.height * 0.27f, x, size.height * 0.29f)
+                moveTo(x, size.height * 0.72f)
+                cubicTo(x + dir * 12.dp.toPx(), size.height * 0.75f, x + dir * 12.dp.toPx(), size.height * 0.79f, x, size.height * 0.82f)
             }
-            drawPath(wave, teal, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
-            val innerWave = androidx.compose.ui.graphics.Path().apply {
-                moveTo(x - direction * 3.dp.toPx(), size.height * 0.23f)
-                cubicTo(x - direction * 9.dp.toPx(), size.height * 0.28f,
-                    x - direction * 8.dp.toPx(), size.height * 0.31f, x - direction * 2.dp.toPx(), size.height * 0.34f)
-                moveTo(x - direction * 2.dp.toPx(), size.height * 0.62f)
-                cubicTo(x - direction * 9.dp.toPx(), size.height * 0.67f,
-                    x - direction * 8.dp.toPx(), size.height * 0.71f, x - direction * 2.dp.toPx(), size.height * 0.75f)
+            drawPath(corner, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
+            val sideWave = Path().apply {
+                moveTo(x, size.height * 0.33f)
+                cubicTo(x + dir * 5.dp.toPx(), size.height * 0.38f, x - dir * 4.dp.toPx(), size.height * 0.43f, x, size.height * 0.48f)
+                cubicTo(x + dir * 5.dp.toPx(), size.height * 0.53f, x - dir * 4.dp.toPx(), size.height * 0.58f, x, size.height * 0.63f)
             }
-            drawPath(innerWave, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke * 0.85f))
-            for (fraction in listOf(0.20f, 0.50f, 0.77f)) {
-                drawCircle(gold, 2.dp.toPx(), Offset(x - direction * 2.dp.toPx(), size.height * fraction))
+            drawPath(sideWave, teal, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke * 0.8f, cap = StrokeCap.Round))
+        }
+
+        // Lower coastline with mountain peaks and cedar-like silhouettes.
+        val baseY = size.height * 0.88f
+        val mountain = Path().apply {
+            moveTo(size.width * 0.20f, baseY)
+            lineTo(size.width * 0.34f, baseY - 7.dp.toPx())
+            lineTo(size.width * 0.40f, baseY - 3.dp.toPx())
+            lineTo(size.width * 0.49f, baseY - 17.dp.toPx())
+            lineTo(size.width * 0.55f, baseY - 6.dp.toPx())
+            lineTo(size.width * 0.65f, baseY - 12.dp.toPx())
+            lineTo(size.width * 0.80f, baseY)
+        }
+        drawPath(mountain, navy, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke * 1.15f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        drawPath(mountain, pale, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke * 0.45f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        for (xFrac in listOf(0.28f, 0.32f, 0.68f, 0.72f)) {
+            val x = size.width * xFrac
+            val tree = Path().apply {
+                moveTo(x, baseY)
+                lineTo(x - 4.dp.toPx(), baseY - 5.dp.toPx())
+                lineTo(x - 1.5.dp.toPx(), baseY - 5.dp.toPx())
+                lineTo(x - 5.dp.toPx(), baseY - 10.dp.toPx())
+                lineTo(x - 1.dp.toPx(), baseY - 10.dp.toPx())
+                lineTo(x, baseY - 14.dp.toPx())
+                lineTo(x + 1.dp.toPx(), baseY - 10.dp.toPx())
+                lineTo(x + 5.dp.toPx(), baseY - 10.dp.toPx())
+                lineTo(x + 1.5.dp.toPx(), baseY - 5.dp.toPx())
+                lineTo(x + 4.dp.toPx(), baseY - 5.dp.toPx())
+                close()
             }
+            drawPath(tree, teal)
         }
     }
 }
